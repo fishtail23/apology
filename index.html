@@ -2,13 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>I Suck (But I Love You so much)</title>
+  <title>I Suck (But I Love You)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -24,17 +22,14 @@
     h1 {
       font-family: 'Pacifico', cursive;
       font-size: 2.2rem;
-      color: #ffffff;
       margin-top: 2rem;
       text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
     }
 
     #start-screen {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
       background: rgba(0, 0, 0, 0.85);
       display: flex;
       flex-direction: column;
@@ -79,6 +74,7 @@
       cursor: pointer;
       transition: all 0.3s ease;
       color: #333;
+      text-align: center;
     }
 
     .piece.revealed {
@@ -150,12 +146,13 @@
   <div id="final">
     <h2>💌 From Me to You</h2>
     <p>
-      I know I hurt you, and I’m really sorry.<br><br>
-      I acted like a dumbass — the kind who barely deserves someone like you.<br><br>
-      But here I am, trying. Because you matter to me. A lot.<br><br>
-      ❤️ Yours always (even when I suck)<br>– Me
+      If you're still reading this, thank you. I know I messed up.<br><br>
+      You didn’t deserve to be hurt. But you're still here, even if it's just to hear me out — and that means the world.<br><br>
+      I'm not perfect. But I'm trying. For real.<br><br>
+      Call me, if you still believe there's something here.<br><br>
+      ❤️ Always, even when I suck — Me
     </p>
-    <button onclick="window.location.href='tel:+213669905869'">Call me?</button>
+    <button onclick="window.location.href='tel:+1234567890'">Call me?</button>
   </div>
 
   <audio id="bg-music" preload="auto" loop>
@@ -164,12 +161,12 @@
 
   <script>
     const messages = [
-      "I know I messed up badly 💔",
-      "You didn’t deserve any of it",
-      "I'm an idiot (but your idiot?) 😅",
-      "I’m really trying to be better",
-      "You matter more than anything",
-      "I love you and miss you deeply 💘"
+      "It started with something stupid I said...",
+      "And I know I hurt you way more than I meant to.",
+      "You didn’t deserve that — not even a little.",
+      "You’ve always been there for me when I didn’t deserve it.",
+      "I miss your voice, your laugh, your presence.",
+      "I still love you. Honestly. Completely."
     ];
 
     function startApp() {
