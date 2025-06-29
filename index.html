@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>I Suck (But I Love You)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Quicksand', sans-serif;
+      background: url('https://media.tenor.com/fOP9jA3HaMsAAAAi/hearts-of-happiness-hearts.gif') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+      text-align: center;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      font-family: 'Pacifico', cursive;
+      font-size: 2.5rem;
+      color: #ffffff;
+      margin-top: 2rem;
+      animation: fadeIn 2s ease;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+    }
+
+    #pieces {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 2rem;
+      gap: 10px;
+      padding: 0 20px;
+    }
+
+    .piece {
+      width: 120px;
+      height: 120px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      animation: fadeIn 1s ease;
+      color: #333;
+    }
+
+    .piece.revealed {
+      background: #ff9ebf;
+      color: white;
+      transform: scale(1.05);
+    }
+
+    #final {
+      display: none;
+      background: rgba(255, 255, 255, 0.9);
+      margin: 3rem auto;
+      padding: 2rem;
+      border-radius: 20px;
+      max-width: 500px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      animation: fadeIn 2s ease;
+      color: #333;
+    }
+
+    #final h2 {
+      font-family: 'Pacifico', cursive;
+      color: #d6336c;
+    }
+
+    #final p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-top: 1rem;
+    }
+
+    #final button {
+      margin-top: 1.5rem;
+      padding: 0.8rem 1.6rem;
+      font-size: 1rem;
+      border: none;
+      background: #ff69b4;
+      color: white;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    #final button:hover {
+      background: #c2185b;
+    }
+
+    .heart {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Flat_red_heart_icon.svg/1024px-Flat_red_heart_icon.svg.png');
+      background-size: cover;
+      animation: float 6s linear infinite;
+      opacity: 0.8;
+      pointer-events: none;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(100vh) scale(1); opacity: 0; }
+      30% { opacity: 1; }
+      100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <h1>I Suck (But I Love You)</h1>
+  <div id="pieces"></div>
+
+  <div id="final">
+    <h2>💌 From Me to You</h2>
+    <p>
+      I know I hurt you, and I’m really sorry. I acted like a fool — the kind that doesn't deserve someone like you.<br><br>
+      But here I am, still hoping, because you mean the world to me. I miss you. I care. I’m not giving up.<br><br>
+      I love you, and I’m trying to be better — for me, but especially for us.<br><br>
+      ❤️ Yours always (even when I suck)<br>– Me
+    </p>
+    <button onclick="window.location.href='sms:'">Text me?</button>
+  </div>
+
+  <audio autoplay loop>
+    <source src="https://cdn.pixabay.com/download/audio/2022/10/30/audio_1d78165978.mp3?filename=romantic-piano-126566.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    const messages = [
+      "I know I messed up badly 💔",
+      "You didn’t deserve any of it",
+      "I'm an idiot (but your idiot?) 😅",
+      "I’m really trying to be better",
+      "You matter more than anything",
+      "I love you and miss you deeply 💘"
+    ];
+
+    let revealed = 0;
+    const container = document.getElementById("pieces");
+
+    messages.forEach(msg => {
+      const div = document.createElement("div");
+      div.className = "piece";
+      div.innerText = "Tap me";
+      div.addEventListener("click", () => {
+        if (!div.classList.contains("revealed")) {
+          div.classList.add("revealed");
+          div.innerText = msg;
+          revealed++;
+          if (revealed === messages.length) {
+            document.getElementById("final").style.display = "block";
+          }
+        }
+      });
+      container.appendChild(div);
+    });
+
+    function createHeart() {
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      heart.style.left = Math.random() * 100 + "vw";
+      heart.style.animationDuration = (6 + Math.random() * 4) + "s";
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 10000);
+    }
+
+    setInterval(createHeart, 600);
+  </script>
+</body>
+</html>
