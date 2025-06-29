@@ -94,6 +94,33 @@
       font-size: 1.1rem;
       line-height: 1.5;
     }
+    #flowers {
+      display: none;
+      margin-top: 2rem;
+    }
+    #flowers img {
+      width: 200px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    #flowers .buttons {
+      margin-top: 1rem;
+    }
+    #flowers button {
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      color: white;
+    }
+    #flowers .yes {
+      background: #28a745;
+      margin-right: 10px;
+    }
+    #flowers .no {
+      background: #dc3545;
+    }
     .heart {
       position: absolute;
       width: 24px;
@@ -130,13 +157,11 @@
     </p>
   </div>
 
-  <div id="flowers" style="display:none; margin-top: 1.5rem;">
-    <img src="https://pm1.aminoapps.com/7235/0b2e85e4c8b01d131ba62ba1eae8f70fcab86849r1-530-370v2_hq.jpg"
-         alt="Bouquet of flowers"
-         style="width: 180px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);">
-    <div style="margin-top: 1rem;">
-      <button onclick="window.location.href='tel:0669905869'" style="margin-right: 10px; padding: 0.6rem 1.2rem; font-size: 1rem; border: none; background: #28a745; color: white; border-radius: 10px; cursor: pointer;">نعم</button>
-      <button onclick="alert('😔')" style="padding: 0.6rem 1.2rem; font-size: 1rem; border: none; background: #dc3545; color: white; border-radius: 10px; cursor: pointer;">لا</button>
+  <div id="flowers">
+    <img src="https://pm1.aminoapps.com/7235/0b2e85e4c8b01d131ba62ba1eae8f70fcab86849r1-530-370v2_hq.jpg" alt="Bouquet of flowers">
+    <div class="buttons">
+      <button class="yes" onclick="window.location.href='tel:0669905869'">نعم</button>
+      <button class="no" onclick="alert('😔')">لا</button>
     </div>
   </div>
 
@@ -157,12 +182,14 @@
     function startApp() {
       document.getElementById("start-screen").style.display = "none";
       document.getElementById("pieces").style.display = "flex";
+
       const audio = document.getElementById("bg-music");
       audio.play().catch(() => {});
+
       const container = document.getElementById("pieces");
       container.innerHTML = "";
-      let revealed = 0;
 
+      let revealed = 0;
       messages.forEach(msg => {
         const div = document.createElement("div");
         div.className = "piece";
