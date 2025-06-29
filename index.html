@@ -1,10 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>I Suck (But I Love You)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand&display=swap" rel="stylesheet">
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       padding: 0;
@@ -13,16 +18,14 @@
       background-size: cover;
       color: #fff;
       text-align: center;
-      position: relative;
       overflow-x: hidden;
     }
 
     h1 {
       font-family: 'Pacifico', cursive;
-      font-size: 2.5rem;
+      font-size: 2.2rem;
       color: #ffffff;
       margin-top: 2rem;
-      animation: fadeIn 2s ease;
       text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
     }
 
@@ -31,13 +34,15 @@
       flex-wrap: wrap;
       justify-content: center;
       margin-top: 2rem;
-      gap: 10px;
-      padding: 0 20px;
+      gap: 12px;
+      padding: 0 10px;
     }
 
     .piece {
-      width: 120px;
-      height: 120px;
+      width: 40vw;
+      height: 40vw;
+      max-width: 160px;
+      max-height: 160px;
       background: white;
       border-radius: 20px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
@@ -48,7 +53,6 @@
       padding: 10px;
       cursor: pointer;
       transition: all 0.3s ease;
-      animation: fadeIn 1s ease;
       color: #333;
     }
 
@@ -61,40 +65,34 @@
     #final {
       display: none;
       background: rgba(255, 255, 255, 0.9);
-      margin: 3rem auto;
-      padding: 2rem;
+      margin: 2rem auto;
+      padding: 1.5rem;
       border-radius: 20px;
-      max-width: 500px;
+      max-width: 90%;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      animation: fadeIn 2s ease;
       color: #333;
     }
 
     #final h2 {
       font-family: 'Pacifico', cursive;
       color: #d6336c;
+      margin-bottom: 0.5rem;
     }
 
     #final p {
       font-size: 1.1rem;
-      line-height: 1.6;
-      margin-top: 1rem;
+      line-height: 1.5;
     }
 
     #final button {
-      margin-top: 1.5rem;
-      padding: 0.8rem 1.6rem;
+      margin-top: 1.2rem;
+      padding: 0.8rem 1.5rem;
       font-size: 1rem;
       border: none;
       background: #ff69b4;
       color: white;
       border-radius: 12px;
       cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    #final button:hover {
-      background: #c2185b;
     }
 
     .heart {
@@ -113,11 +111,6 @@
       30% { opacity: 1; }
       100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
     }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
   </style>
 </head>
 <body>
@@ -127,15 +120,15 @@
   <div id="final">
     <h2>💌 From Me to You</h2>
     <p>
-      I know I hurt you, and I’m really sorry. I acted like a fool — the kind that doesn't deserve someone like you.<br><br>
-      But here I am, still hoping, because you mean the world to me. I miss you. I care. I’m not giving up.<br><br>
-      I love you, and I’m trying to be better — for me, but especially for us.<br><br>
+      I know I hurt you, and I’m really sorry.<br><br>
+      I acted like a dumbass — the kind who barely deserves someone like you.<br><br>
+      But here I am, trying. Because you matter to me. A lot.<br><br>
       ❤️ Yours always (even when I suck)<br>– Me
     </p>
     <button onclick="window.location.href='sms:'">Text me?</button>
   </div>
 
-  <audio autoplay loop>
+  <audio autoplay loop playsinline>
     <source src="https://cdn.pixabay.com/download/audio/2022/10/30/audio_1d78165978.mp3?filename=romantic-piano-126566.mp3" type="audio/mpeg">
   </audio>
 
