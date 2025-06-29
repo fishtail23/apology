@@ -2,12 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>I Suck (But I Love You)</title>
+  <title>Fixing What I Broke</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
       padding: 0;
@@ -18,103 +17,55 @@
       text-align: center;
       overflow-x: hidden;
     }
-
     h1 {
       font-family: 'Pacifico', cursive;
-      font-size: 2.2rem;
+      font-size: 2.5rem;
       margin-top: 2rem;
       text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
     }
-
-    #start-screen {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.85);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
+    #heart-container {
+      width: 220px;
+      margin: 2rem auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
     }
-
-    #start-screen button {
-      font-size: 1.2rem;
-      padding: 1rem 2rem;
-      border: none;
-      border-radius: 10px;
-      background: #ff69b4;
-      color: white;
-      font-family: 'Quicksand', sans-serif;
+    .heart-piece {
+      width: 70px;
+      height: 70px;
+      background: #ff4d6d;
+      border-radius: 50%;
+      opacity: 0.3;
       cursor: pointer;
+      transition: 0.3s;
     }
-
-    #pieces {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 2rem;
-      gap: 12px;
-      padding: 0 10px;
+    .heart-piece.fixed {
+      opacity: 1;
+      transform: scale(1.1);
+      box-shadow: 0 0 10px #fff;
     }
-
-    .piece {
-      width: 40vw;
-      height: 40vw;
-      max-width: 160px;
-      max-height: 160px;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      padding: 10px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      color: #333;
-    }
-
-    .piece.revealed {
-      background: #ff9ebf;
-      color: white;
-      transform: scale(1.05);
-    }
-
-    #sentence {
-      margin-top: 1.5rem;
-      font-size: 1.5rem;
+    #message {
       display: none;
-      animation: fadeIn 1s ease forwards;
-      color: #fff;
-      font-weight: bold;
-      text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+      font-size: 1.5rem;
+      margin-top: 2rem;
+      padding: 1rem;
     }
-
-    #final {
+    #letter {
       display: none;
       background: rgba(255, 255, 255, 0.9);
       margin: 2rem auto;
       padding: 1.5rem;
       border-radius: 20px;
       max-width: 90%;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       color: #333;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      animation: fadeIn 2s ease;
     }
-
-    #final h2 {
-      font-family: 'Pacifico', cursive;
-      color: #d6336c;
-      margin-bottom: 0.5rem;
+    #letter p {
+      font-size: 1.2rem;
+      line-height: 1.6;
     }
-
-    #final p {
-      font-size: 1.1rem;
-      line-height: 1.5;
-    }
-
-    #final button {
+    #letter button {
       margin-top: 1.2rem;
       padding: 0.8rem 1.5rem;
       font-size: 1rem;
@@ -124,46 +75,18 @@
       border-radius: 12px;
       cursor: pointer;
     }
-
-    .heart {
-      position: absolute;
-      width: 24px;
-      height: 24px;
-      background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Flat_red_heart_icon.svg/1024px-Flat_red_heart_icon.svg.png');
-      background-size: cover;
-      animation: float 6s linear infinite;
-      opacity: 0.8;
-      pointer-events: none;
-    }
-
-    @keyframes float {
-      0% { transform: translateY(100vh) scale(1); opacity: 0; }
-      30% { opacity: 1; }
-      100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
-    }
-
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
+      from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
 <body>
-
-  <div id="start-screen">
-    <h1>I Suck (But I Love You)</h1>
-    <button onclick="startApp()">Tap to Begin</button>
-  </div>
-
-  <div id="pieces" style="display:none;"></div>
-  <div id="sentence"></div>
-
-  <div id="final">
-    <h2>💌 From Me to You</h2>
-    <p>
-      I know this won't undo things. But I needed to try. I miss you. I care. I love you — and I’m still here if you are.<br><br>
-      ❤️ Always, even when I suck — Me
-    </p>
+  <h1>Let Me Fix What I Broke</h1>
+  <div id="heart-container"></div>
+  <div id="message"></div>
+  <div id="letter">
+    <p id="typed"></p>
     <button onclick="window.location.href='tel:+1234567890'">Call me?</button>
   </div>
 
@@ -172,54 +95,42 @@
   </audio>
 
   <script>
-    const words = ["You", "matter", "to", "me", "more", "than you know"];
-    let revealed = 0;
+    const heartContainer = document.getElementById('heart-container');
+    const message = document.getElementById('message');
+    const letter = document.getElementById('letter');
+    const typed = document.getElementById('typed');
+    const audio = document.getElementById('bg-music');
+    let fixedCount = 0;
+    const totalPieces = 6;
 
-    function startApp() {
-      document.getElementById("start-screen").style.display = "none";
-      document.getElementById("pieces").style.display = "flex";
-
-      const audio = document.getElementById("bg-music");
-      audio.play().catch(() => {});
-
-      const container = document.getElementById("pieces");
-      container.innerHTML = "";
-
-      let shuffled = [...words].sort(() => Math.random() - 0.5);
-
-      shuffled.forEach((word, i) => {
-        const div = document.createElement("div");
-        div.className = "piece";
-        div.innerText = "?";
-        div.addEventListener("click", () => {
-          if (!div.classList.contains("revealed")) {
-            div.classList.add("revealed");
-            div.innerText = words[revealed];
-            revealed++;
-            if (revealed === words.length) {
-              showSentence();
-            }
-          }
-        });
-        container.appendChild(div);
+    for (let i = 0; i < totalPieces; i++) {
+      const piece = document.createElement('div');
+      piece.classList.add('heart-piece');
+      piece.addEventListener('click', () => {
+        if (!piece.classList.contains('fixed')) {
+          piece.classList.add('fixed');
+          fixedCount++;
+          if (fixedCount === totalPieces) showMessage();
+        }
       });
-
-      setInterval(() => {
-        const heart = document.createElement("div");
-        heart.className = "heart";
-        heart.style.left = Math.random() * 100 + "vw";
-        heart.style.animationDuration = (6 + Math.random() * 4) + "s";
-        document.body.appendChild(heart);
-        setTimeout(() => heart.remove(), 10000);
-      }, 600);
+      heartContainer.appendChild(piece);
     }
 
-    function showSentence() {
-      document.getElementById("sentence").style.display = "block";
-      document.getElementById("sentence").innerText = words.join(" ");
+    function showMessage() {
+      message.innerText = 'You fixed it... at least a little.';
+      message.style.display = 'block';
       setTimeout(() => {
-        document.getElementById("final").style.display = "block";
+        letter.style.display = 'block';
+        typeMessage("I know I broke something between us. But every tap, every word here, is me trying to put it back together. I miss you. I love you. If you're willing... call me.");
+        audio.play().catch(() => {});
       }, 1500);
+    }
+
+    function typeMessage(text, i = 0) {
+      if (i < text.length) {
+        typed.innerText += text.charAt(i);
+        setTimeout(() => typeMessage(text, i + 1), 40);
+      }
     }
   </script>
 </body>
