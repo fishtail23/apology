@@ -29,6 +29,31 @@
       text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
     }
 
+    #start-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    #start-screen button {
+      font-size: 1.2rem;
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 10px;
+      background: #ff69b4;
+      color: white;
+      font-family: 'Quicksand', sans-serif;
+      cursor: pointer;
+    }
+
     #pieces {
       display: flex;
       flex-wrap: wrap;
@@ -114,8 +139,13 @@
   </style>
 </head>
 <body>
-  <h1>I Suck (But I Love You)</h1>
-  <div id="pieces"></div>
+
+  <div id="start-screen">
+    <h1>I Suck (But I Love You)</h1>
+    <button onclick="startApp()">Tap to Begin</button>
+  </div>
+
+  <div id="pieces" style="display:none;"></div>
 
   <div id="final">
     <h2>💌 From Me to You</h2>
@@ -142,42 +172,44 @@
       "I love you and miss you deeply 💘"
     ];
 
-    let revealed = 0;
-    const container = document.getElementById("pieces");
-    const audio = document.getElementById("bg-music");
+    function startApp() {
+      document.getElementById("start-screen").style.display = "none";
+      document.getElementById("pieces").style.display = "flex";
 
-    messages.forEach(msg => {
-      const div = document.createElement("div");
-      div.className = "piece";
-      div.innerText = "Tap me";
-      div.addEventListener("click", () => {
-        // Try to start the music on first tap
-        if (audio && audio.paused) {
-          audio.play().catch(() => {});
-        }
+      const audio = document.getElementById("bg-music");
+      audio.play().catch(() => {});
 
-        if (!div.classList.contains("revealed")) {
-          div.classList.add("revealed");
-          div.innerText = msg;
-          revealed++;
-          if (revealed === messages.length) {
-            document.getElementById("final").style.display = "block";
+      const container = document.getElementById("pieces");
+      container.innerHTML = "";
+
+      let revealed = 0;
+
+      messages.forEach(msg => {
+        const div = document.createElement("div");
+        div.className = "piece";
+        div.innerText = "Tap me";
+        div.addEventListener("click", () => {
+          if (!div.classList.contains("revealed")) {
+            div.classList.add("revealed");
+            div.innerText = msg;
+            revealed++;
+            if (revealed === messages.length) {
+              document.getElementById("final").style.display = "block";
+            }
           }
-        }
+        });
+        container.appendChild(div);
       });
-      container.appendChild(div);
-    });
 
-    function createHeart() {
-      const heart = document.createElement("div");
-      heart.className = "heart";
-      heart.style.left = Math.random() * 100 + "vw";
-      heart.style.animationDuration = (6 + Math.random() * 4) + "s";
-      document.body.appendChild(heart);
-      setTimeout(() => heart.remove(), 10000);
+      setInterval(() => {
+        const heart = document.createElement("div");
+        heart.className = "heart";
+        heart.style.left = Math.random() * 100 + "vw";
+        heart.style.animationDuration = (6 + Math.random() * 4) + "s";
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 10000);
+      }, 600);
     }
-
-    setInterval(createHeart, 600);
   </script>
 </body>
 </html>
