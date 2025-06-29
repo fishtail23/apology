@@ -69,18 +69,27 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1rem;
+      font-size: 1.2rem;
       padding: 10px;
       cursor: pointer;
       transition: all 0.3s ease;
       color: #333;
-      text-align: center;
     }
 
     .piece.revealed {
       background: #ff9ebf;
       color: white;
       transform: scale(1.05);
+    }
+
+    #sentence {
+      margin-top: 1.5rem;
+      font-size: 1.5rem;
+      display: none;
+      animation: fadeIn 1s ease forwards;
+      color: #fff;
+      font-weight: bold;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
     }
 
     #final {
@@ -132,6 +141,11 @@
       30% { opacity: 1; }
       100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
     }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
@@ -142,14 +156,12 @@
   </div>
 
   <div id="pieces" style="display:none;"></div>
+  <div id="sentence"></div>
 
   <div id="final">
     <h2>💌 From Me to You</h2>
     <p>
-      If you're still reading this, thank you. I know I messed up.<br><br>
-      You didn’t deserve to be hurt. But you're still here, even if it's just to hear me out — and that means the world.<br><br>
-      I'm not perfect. But I'm trying. For real.<br><br>
-      Call me, if you still believe there's something here.<br><br>
+      I know this won't undo things. But I needed to try. I miss you. I care. I love you — and I’m still here if you are.<br><br>
       ❤️ Always, even when I suck — Me
     </p>
     <button onclick="window.location.href='tel:+1234567890'">Call me?</button>
@@ -160,14 +172,8 @@
   </audio>
 
   <script>
-    const messages = [
-      "It started with something stupid I said...",
-      "And I know I hurt you way more than I meant to.",
-      "You didn’t deserve that — not even a little.",
-      "You’ve always been there for me when I didn’t deserve it.",
-      "I miss your voice, your laugh, your presence.",
-      "I still love you. Honestly. Completely."
-    ];
+    const words = ["You", "matter", "to", "me", "more", "than you know"];
+    let revealed = 0;
 
     function startApp() {
       document.getElementById("start-screen").style.display = "none";
@@ -179,19 +185,19 @@
       const container = document.getElementById("pieces");
       container.innerHTML = "";
 
-      let revealed = 0;
+      let shuffled = [...words].sort(() => Math.random() - 0.5);
 
-      messages.forEach(msg => {
+      shuffled.forEach((word, i) => {
         const div = document.createElement("div");
         div.className = "piece";
-        div.innerText = "Tap me";
+        div.innerText = "?";
         div.addEventListener("click", () => {
           if (!div.classList.contains("revealed")) {
             div.classList.add("revealed");
-            div.innerText = msg;
+            div.innerText = words[revealed];
             revealed++;
-            if (revealed === messages.length) {
-              document.getElementById("final").style.display = "block";
+            if (revealed === words.length) {
+              showSentence();
             }
           }
         });
@@ -206,6 +212,14 @@
         document.body.appendChild(heart);
         setTimeout(() => heart.remove(), 10000);
       }, 600);
+    }
+
+    function showSentence() {
+      document.getElementById("sentence").style.display = "block";
+      document.getElementById("sentence").innerText = words.join(" ");
+      setTimeout(() => {
+        document.getElementById("final").style.display = "block";
+      }, 1500);
     }
   </script>
 </body>
