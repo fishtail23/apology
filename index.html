@@ -13,7 +13,7 @@
 
     body {
       font-family: 'Quicksand', sans-serif;
-      background: #ffe4ec; /* Soft pink background */
+      background: #ffe4ec;
       overflow: hidden;
     }
 
@@ -75,7 +75,6 @@
       gravity: 1,
       jumpPower: -18,
       onGround: false,
-      color: "#ff69b4"
     };
 
     const roses = [];
@@ -84,10 +83,8 @@
     let gameRunning = true;
 
     function drawPlayer() {
-      ctx.fillStyle = player.color;
-      ctx.beginPath();
-      ctx.arc(player.x + player.width / 2, player.y + player.height / 2, player.width / 2, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.font = "36px serif";
+      ctx.fillText("🏃‍♀️", player.x, player.y + player.height);
     }
 
     function drawRose(rose) {
