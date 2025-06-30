@@ -12,14 +12,12 @@
       overflow: hidden;
       background: #ffe4f2;
     }
-
     canvas {
       display: block;
       width: 100vw;
       height: 100vh;
       touch-action: none;
     }
-
     #restartBtn {
       position: absolute;
       top: 50%;
@@ -80,9 +78,11 @@
     let animationFrame;
 
     function initGame() {
+      const groundLevel = canvas.height - UNIT;  // match floor height
+
       player = {
         x: UNIT * 2,
-        y: canvas.height - UNIT * 2.4,
+        y: groundLevel - UNIT * 1.2,
         width: UNIT * 1.2,
         height: UNIT * 1.2,
         velocityY: 0,
@@ -92,9 +92,9 @@
       obstacles = [];
       score = 0;
       frameCounter = 0;
-      gameRunning = true;
       obstacleTimer = 0;
       nextObstacleIn = 100;
+      gameRunning = true;
       restartBtn.style.display = "none";
 
       cancelAnimationFrame(animationFrame);
@@ -164,8 +164,10 @@
       player.velocityY += GRAVITY;
       player.y += player.velocityY;
 
-      if (player.y + player.height >= canvas.height - UNIT) {
-        player.y = canvas.height - UNIT - player.height;
+      const groundY = canvas.height - UNIT - player.height;
+
+      if (player.y >= groundY) {
+        player.y = groundY;
         player.velocityY = 0;
         player.isOnGround = true;
       } else {
@@ -238,12 +240,11 @@
       if (e.code === "Space" || e.code === "ArrowUp") jump();
     });
 
-    document.addEventListener("touchstart", e => {
+    canvas.addEventListener("mousedown", jump);
+    canvas.addEventListener("touchstart", (e) => {
       e.preventDefault();
       jump();
     }, { passive: false });
-
-    canvas.addEventListener("mousedown", jump);
 
     restartBtn.addEventListener("click", () => {
       initGame();
