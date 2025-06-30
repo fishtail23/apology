@@ -4,7 +4,10 @@
   <meta charset="UTF-8" />
   <title>I Suck (But I Love You)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Google Fonts for prettier text -->
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand&display=swap" rel="stylesheet">
+
+  <!-- 🌈 All your CSS goes here -->
   <style>
     * { box-sizing: border-box; }
     body {
@@ -136,8 +139,21 @@
       30% { opacity: 1; }
       100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
     }
+
+    /* 🌟 NEW BUTTON YOU CAN CLICK (for demo purposes) */
+    #click-me {
+      background-color: #ffc107;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      margin-top: 2rem;
+      border-radius: 10px;
+      cursor: pointer;
+      color: #333;
+    }
   </style>
 </head>
+
 <body>
   <div id="start-screen">
     <h1>I Suck (But I Love You)</h1>
@@ -155,6 +171,9 @@
       ❤️ Yours always (even when I suck)<br>
       – Your apologetic little baby
     </p>
+
+    <!-- 💛 DEMO BUTTON -->
+    <button id="click-me">Click Me</button>
   </div>
 
   <div id="flowers">
@@ -162,14 +181,15 @@
     <div class="buttons">
       <button class="yes" onclick="window.location.href='tel:0669905869'">نعم</button>
       <button class="no" onclick="alert('Mahaaaaniiiii 😭😭😭😭 try agaaaaiiiin')">لا</button>
-
     </div>
   </div>
 
+  <!-- Background music -->
   <audio id="bg-music" preload="auto" loop>
     <source src="https://cdn.pixabay.com/download/audio/2022/10/30/audio_1d78165978.mp3?filename=romantic-piano-126566.mp3" type="audio/mpeg">
   </audio>
 
+  <!-- ⚡ All your JavaScript goes here -->
   <script>
     const messages = [
       "I suck habiby I know 😞",
@@ -211,6 +231,7 @@
         container.appendChild(div);
       });
 
+      // Create floating hearts
       setInterval(() => {
         const heart = document.createElement("div");
         heart.className = "heart";
@@ -220,6 +241,16 @@
         setTimeout(() => heart.remove(), 10000);
       }, 600);
     }
+
+    // NEW: click-me button alert
+    document.addEventListener("DOMContentLoaded", () => {
+      const btn = document.getElementById("click-me");
+      if (btn) {
+        btn.addEventListener("click", () => {
+          alert("Just wanted to remind you that I love you! ❤️");
+        });
+      }
+    });
   </script>
 </body>
 </html>
