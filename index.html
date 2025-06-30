@@ -82,6 +82,8 @@
     let roses = [];
     let score = 0;
     let gameOver = false;
+    let roseTimer = 0;
+    let roseInterval = 80; // Frames between obstacles (adjust for difficulty)
 
     function resetGame() {
       player.y = canvas.height - player.height - groundHeight;
@@ -90,6 +92,7 @@
       roses = [];
       score = 0;
       gameOver = false;
+      roseTimer = 0;
       document.getElementById("game-over").style.display = "none";
       document.getElementById("score").innerText = "Score: 0";
     }
@@ -106,7 +109,7 @@
     function drawRoses() {
       ctx.font = `${emojiSize}px serif`;
       roses.forEach(rose => {
-        ctx.fillText("🌹", rose.x, rose.y + emojiSize); // Draw from bottom baseline
+        ctx.fillText("🌹", rose.x, rose.y + emojiSize);
       });
     }
 
@@ -144,7 +147,7 @@
       ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight);
 
       if (!gameOver) {
-        // Update player
+        // Player physics
         player.dy += player.gravity;
         player.y += player.dy;
 
@@ -154,12 +157,17 @@
           player.grounded = true;
         }
 
-        // Add new roses randomly
-        if (Math.random() < 0.02) {
+        // Rose spawn control
+        roseTimer++;
+        if (roseTimer >= roseInterval) {
+          roseTimer = 0;
           roses.push({
             x: canvas.width,
             y: canvas.height - groundHeight - emojiSize
           });
+
+          // Add a little randomness to spacing
+          roseInterval = 80 + Math.floor(Math.random() * 50); // 80–130 frames
         }
 
         updateRoses();
@@ -173,7 +181,7 @@
       requestAnimationFrame(update);
     }
 
-    // Tap anywhere to jump or restart
+    // Touch or click to jump or restart
     window.addEventListener("touchstart", () => {
       if (gameOver) {
         resetGame();
@@ -190,7 +198,6 @@
       }
     });
 
-    // Start the game
     resetGame();
     update();
   </script>
