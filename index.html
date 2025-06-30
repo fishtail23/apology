@@ -17,9 +17,7 @@
       display: block;
       width: 100vw;
       height: 100vh;
-      touch-action: manipulation;
-      -webkit-user-select: none;
-      user-select: none;
+      touch-action: none;
     }
 
     #restartBtn {
@@ -34,6 +32,7 @@
       border: none;
       border-radius: 10px;
       display: none;
+      z-index: 10;
     }
   </style>
 </head>
@@ -54,22 +53,16 @@
     resizeCanvas();
 
     const UNIT = canvas.height / 15;
+    const GRAVITY = UNIT * 0.2;
+    const JUMP_POWER = -UNIT * 0.28;
 
-    // Images
-    const walkA = new Image();
-    walkA.src = "assets/character_pink_walk_a.png";
-
-    const walkB = new Image();
-    walkB.src = "assets/character_pink_walk_b.png";
-
-    const jumpImg = new Image();
-    jumpImg.src = "assets/character_pink_jump.png";
-
-    const bgImage = new Image();
-    bgImage.src = "assets/background_color_mushrooms.png";
-
-    const floorTile = new Image();
-    floorTile.src = "assets/terrain_dirt_block_top.png";
+    // Load images
+    const walkA = new Image(); walkA.src = "assets/character_pink_walk_a.png";
+    const walkB = new Image(); walkB.src = "assets/character_pink_walk_b.png";
+    const jumpImg = new Image(); jumpImg.src = "assets/character_pink_jump.png";
+    const bgImage = new Image(); bgImage.src = "assets/background_color_mushrooms.png";
+    const floorTile = new Image(); floorTile.src = "assets/terrain_dirt_block_top.png";
+    const sunImage = new Image(); sunImage.src = "assets/hud_player_helmet_yellow.png";
 
     const obstacleImages = [
       "assets/fence.png",
@@ -81,15 +74,9 @@
       return img;
     });
 
-    const sunImage = new Image();
-    sunImage.src = "assets/hud_player_helmet_yellow.png";
-
     let player, obstacles, score, gameRunning, frameCounter;
     let obstacleTimer = 0;
     let nextObstacleIn = 100;
-
-    const GRAVITY = UNIT * 0.2;
-    const JUMP_POWER = -UNIT * 0.28;
 
     function initGame() {
       player = {
@@ -108,6 +95,8 @@
       obstacleTimer = 0;
       nextObstacleIn = 100;
       restartBtn.style.display = "none";
+
+      requestAnimationFrame(gameLoop); // Restart loop
     }
 
     function drawBackground() {
@@ -233,7 +222,9 @@
     function gameLoop() {
       update();
       draw();
-      requestAnimationFrame(gameLoop);
+      if (gameRunning) {
+        requestAnimationFrame(gameLoop);
+      }
     }
 
     function jump() {
@@ -243,12 +234,12 @@
       }
     }
 
-    document.addEventListener("keydown", (e) => {
+    // Jump inputs
+    document.addEventListener("keydown", e => {
       if (e.code === "Space" || e.code === "ArrowUp") jump();
     });
 
-    // 🔥 FIXED: Jump on touch
-    window.addEventListener("touchstart", (e) => {
+    document.addEventListener("touchstart", e => {
       e.preventDefault();
       jump();
     }, { passive: false });
@@ -259,15 +250,13 @@
       initGame();
     });
 
-    // Wait for all images to load before starting game
-    const allImages = [walkA, walkB, jumpImg, bgImage, floorTile, sunImage, ...obstacleImages];
+    const images = [walkA, walkB, jumpImg, bgImage, floorTile, sunImage, ...obstacleImages];
     let loaded = 0;
-    allImages.forEach(img => {
+    images.forEach(img => {
       img.onload = () => {
         loaded++;
-        if (loaded === allImages.length) {
+        if (loaded === images.length) {
           initGame();
-          gameLoop();
         }
       };
     });
