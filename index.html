@@ -44,23 +44,13 @@
     const restartBtn = document.getElementById("restartBtn");
 
     function resizeCanvas() {
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = window.innerWidth * dpr;
-      canvas.height = window.innerHeight * dpr;
-      ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
-      ctx.scale(dpr, dpr);
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
     }
-
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
 
-    const UNIT = window.innerHeight / 15;
-    const GRAVITY = UNIT * 0.045;
-    const JUMP_POWER = -UNIT * 0.6;
-
-    let player, obstacles, score, gameRunning, frameCounter;
-    let obstacleTimer = 0;
-    let nextObstacleIn = 100;
+    const UNIT = canvas.height / 15;
 
     const walkA = new Image();
     walkA.src = "assets/character_pink_walk_a.png";
@@ -74,10 +64,17 @@
     const bgImage = new Image();
     bgImage.src = "assets/background_color_mushrooms.png";
 
+    let player, obstacles, score, gameRunning, frameCounter;
+    let obstacleTimer = 0;
+    let nextObstacleIn = 100;
+
+    const GRAVITY = UNIT * 0.045;
+    const JUMP_POWER = -UNIT * 0.6;
+
     function initGame() {
       player = {
         x: UNIT * 2,
-        y: window.innerHeight - UNIT * 2,
+        y: canvas.height - UNIT * 2,
         width: UNIT * 1.2,
         height: UNIT * 1.2,
         velocityY: 0,
@@ -94,14 +91,15 @@
     }
 
     function drawBackground() {
-      const scale = Math.max(
-        canvas.width / bgImage.width,
-        canvas.height / bgImage.height
-      );
-      const x = (canvas.width - bgImage.width * scale) / 2;
-      const y = (canvas.height - bgImage.height * scale) / 2;
+      // Fill with background color
+      ctx.fillStyle = "#ffe4f2";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.drawImage(bgImage, x, y, bgImage.width * scale, bgImage.height * scale);
+      // Draw background image aligned to bottom
+      const imgHeight = (bgImage.height / bgImage.width) * canvas.width;
+      const y = canvas.height - imgHeight;
+
+      ctx.drawImage(bgImage, 0, y, canvas.width, imgHeight);
     }
 
     function drawPlayer() {
@@ -125,8 +123,8 @@
     function spawnObstacle() {
       const height = UNIT * 0.8;
       obstacles.push({
-        x: canvas.width / (window.devicePixelRatio || 1),
-        y: window.innerHeight - height,
+        x: canvas.width,
+        y: canvas.height - height,
         width: UNIT * 0.7,
         height: height
       });
@@ -136,9 +134,8 @@
       player.velocityY += GRAVITY;
       player.y += player.velocityY;
 
-      const ground = window.innerHeight - player.height;
-      if (player.y >= ground) {
-        player.y = ground;
+      if (player.y + player.height >= canvas.height) {
+        player.y = canvas.height - player.height;
         player.velocityY = 0;
         player.isOnGround = true;
       } else {
@@ -185,7 +182,6 @@
     }
 
     function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawBackground();
       drawPlayer();
       drawObstacles();
@@ -219,8 +215,19 @@
       initGame();
     });
 
-    initGame();
-    gameLoop();
+    // Wait for all images to load before starting game
+    let imagesToLoad = [walkA, walkB, jumpImg, bgImage];
+    let loadedCount = 0;
+
+    imagesToLoad.forEach(img => {
+      img.onload = () => {
+        loadedCount++;
+        if (loadedCount === imagesToLoad.length) {
+          initGame();
+          gameLoop();
+        }
+      };
+    });
   </script>
 </body>
 </html>
