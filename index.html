@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>Mini Runner</title>
   <style>
     html, body {
@@ -14,10 +14,9 @@
     }
 
     canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
       display: block;
+      width: 100vw;
+      height: 100vh;
     }
 
     #restartBtn {
@@ -32,7 +31,6 @@
       border: none;
       border-radius: 10px;
       display: none;
-      z-index: 10;
     }
   </style>
 </head>
@@ -45,47 +43,36 @@
     const ctx = canvas.getContext("2d");
     const restartBtn = document.getElementById("restartBtn");
 
-    let UNIT = 0;
-
     function resizeCanvas() {
       const dpr = window.devicePixelRatio || 1;
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
-      canvas.style.width = width + "px";
-      canvas.style.height = height + "px";
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
       ctx.scale(dpr, dpr);
-      UNIT = height / 15;
     }
 
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
 
-    const walkA = new Image();
-    const walkB = new Image();
-    const jumpImg = new Image();
-    const background = new Image();
-
-    walkA.src = "assets/character_pink_walk_a.png";
-    walkB.src = "assets/character_pink_walk_b.png";
-    jumpImg.src = "assets/character_pink_jump.png";
-    background.src = "assets/background_color_mushrooms.png";
-
-    let bgScale = 1;
+    const UNIT = window.innerHeight / 15;
+    const GRAVITY = UNIT * 0.045;
+    const JUMP_POWER = -UNIT * 0.6;
 
     let player, obstacles, score, gameRunning, frameCounter;
     let obstacleTimer = 0;
     let nextObstacleIn = 100;
 
-    const GRAVITY = () => UNIT * 0.045;
-    const JUMP_POWER = () => -UNIT * 0.6;
+    const walkA = new Image();
+    walkA.src = "assets/character_pink_walk_a.png";
 
-    function updateBackgroundScale() {
-      const targetHeight = UNIT * 5;
-      bgScale = targetHeight / background.height;
-    }
+    const walkB = new Image();
+    walkB.src = "assets/character_pink_walk_b.png";
+
+    const jumpImg = new Image();
+    jumpImg.src = "assets/character_pink_jump.png";
+
+    const bgImage = new Image();
+    bgImage.src = "assets/background_color_mushrooms.png";
 
     function initGame() {
       player = {
@@ -107,22 +94,19 @@
     }
 
     function drawBackground() {
-      if (!background.complete) return;
+      const scale = Math.max(
+        canvas.width / bgImage.width,
+        canvas.height / bgImage.height
+      );
+      const x = (canvas.width - bgImage.width * scale) / 2;
+      const y = (canvas.height - bgImage.height * scale) / 2;
 
-      const tileW = background.width * bgScale;
-      const tileH = background.height * bgScale;
-      const y = window.innerHeight - tileH;
-
-      for (let x = 0; x < window.innerWidth; x += tileW) {
-        ctx.drawImage(background, x, y, tileW, tileH);
-      }
+      ctx.drawImage(bgImage, x, y, bgImage.width * scale, bgImage.height * scale);
     }
 
     function drawPlayer() {
       const sprite = player.isOnGround ? (frameCounter % 20 < 10 ? walkA : walkB) : jumpImg;
-      if (sprite.complete) {
-        ctx.drawImage(sprite, player.x, player.y, player.width, player.height);
-      }
+      ctx.drawImage(sprite, player.x, player.y, player.width, player.height);
     }
 
     function drawObstacles() {
@@ -141,7 +125,7 @@
     function spawnObstacle() {
       const height = UNIT * 0.8;
       obstacles.push({
-        x: window.innerWidth,
+        x: canvas.width / (window.devicePixelRatio || 1),
         y: window.innerHeight - height,
         width: UNIT * 0.7,
         height: height
@@ -149,7 +133,7 @@
     }
 
     function updatePlayer() {
-      player.velocityY += GRAVITY();
+      player.velocityY += GRAVITY;
       player.y += player.velocityY;
 
       const ground = window.innerHeight - player.height;
@@ -216,7 +200,7 @@
 
     function jump() {
       if (player.isOnGround && gameRunning) {
-        player.velocityY = JUMP_POWER();
+        player.velocityY = JUMP_POWER;
         player.isOnGround = false;
       }
     }
@@ -235,11 +219,8 @@
       initGame();
     });
 
-    background.onload = () => {
-      updateBackgroundScale();
-      initGame();
-      gameLoop();
-    };
+    initGame();
+    gameLoop();
   </script>
 </body>
 </html>
