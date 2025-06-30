@@ -2,23 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Roses Runner</title>
+  <title>I Suck (But I Love You)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    * { box-sizing: border-box; padding: 0; margin: 0; }
-    html, body {
-      height: 100%;
-      overflow: hidden;
-      font-family: sans-serif;
-      background: black;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
-    canvas {
-      display: block;
-      width: 100vw;
-      height: 100vh;
+
+    body {
+      font-family: 'Quicksand', sans-serif;
       background: url('https://media.tenor.com/fOP9jA3HaMsAAAAi/hearts-of-happiness-hearts.gif') no-repeat center center fixed;
       background-size: cover;
+      overflow: hidden;
     }
+
+    canvas {
+      display: block;
+    }
+
+    #scoreDisplay {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.5rem;
+      color: white;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 6px 14px;
+      border-radius: 10px;
+      z-index: 999;
+    }
+
     #gameOver {
       position: absolute;
       top: 40%;
@@ -31,18 +47,19 @@
       border-radius: 10px;
       display: none;
       text-align: center;
+      z-index: 999;
     }
   </style>
 </head>
 <body>
   <canvas id="gameCanvas"></canvas>
+  <div id="scoreDisplay">Score: 0</div>
   <div id="gameOver">Game Over<br><small>Tap to try again</small></div>
 
   <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    // Resize canvas
     function resize() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -50,7 +67,6 @@
     window.addEventListener("resize", resize);
     resize();
 
-    // Player
     const player = {
       x: 50,
       y: 0,
@@ -63,9 +79,9 @@
       color: "#ff69b4"
     };
 
-    // Roses (obstacles)
     const roses = [];
     let frame = 0;
+    let score = 0;
     let gameRunning = true;
 
     function drawPlayer() {
@@ -84,11 +100,18 @@
       document.getElementById("gameOver").style.display = "block";
     }
 
+    function updateScore() {
+      score++;
+      document.getElementById("scoreDisplay").textContent = "Score: " + score;
+    }
+
     function resetGame() {
       player.y = canvas.height - player.height - 30;
       player.vy = 0;
       roses.length = 0;
       frame = 0;
+      score = 0;
+      document.getElementById("scoreDisplay").textContent = "Score: 0";
       gameRunning = true;
       document.getElementById("gameOver").style.display = "none";
       loop();
@@ -103,7 +126,7 @@
       player.vy += player.gravity;
       player.y += player.vy;
 
-      // Ground collision
+      // Ground
       if (player.y + player.height >= canvas.height - 30) {
         player.y = canvas.height - player.height - 30;
         player.vy = 0;
@@ -114,12 +137,11 @@
 
       drawPlayer();
 
-      // Add roses
+      // Roses
       if (frame % 90 === 0) {
         roses.push({ x: canvas.width, y: canvas.height - 50 });
       }
 
-      // Move and draw roses
       for (let i = 0; i < roses.length; i++) {
         roses[i].x -= 6;
         drawRose(roses[i]);
@@ -136,11 +158,13 @@
         }
       }
 
+      // Update score
+      if (frame % 5 === 0) updateScore();
+
       frame++;
       requestAnimationFrame(loop);
     }
 
-    // Controls
     function handleJump() {
       if (player.onGround && gameRunning) {
         player.vy = player.jumpPower;
@@ -157,7 +181,6 @@
       }
     });
 
-    // Start game
     resetGame();
   </script>
 </body>
