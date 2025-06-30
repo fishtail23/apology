@@ -69,13 +69,16 @@
       transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
     }
     .pointer {
-      width: 0;
-      height: 0;
-      border-left: 20px solid transparent;
-      border-right: 20px solid transparent;
-      border-bottom: 30px solid #fff;
-      margin-bottom: 20px;
-    }
+  position: relative;
+  top: 20px; /* pushes it into the wheel */
+  z-index: 10;
+  width: 0;
+  height: 0;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  border-top: 30px solid white;
+  transform: rotate(180deg); /* arrow now points downward into the wheel */
+}
     #spin-btn {
       margin-top: 20px;
       font-size: 1.1rem;
