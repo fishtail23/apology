@@ -65,11 +65,14 @@
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
+    const groundHeight = 30;
+    const emojiSize = 36;
+
     const player = {
       x: 50,
       y: 0,
-      width: 36,
-      height: 36,
+      width: emojiSize,
+      height: emojiSize,
       dy: 0,
       gravity: 0.6,
       jumpForce: -10,
@@ -81,7 +84,7 @@
     let gameOver = false;
 
     function resetGame() {
-      player.y = canvas.height - player.height - 30;
+      player.y = canvas.height - player.height - groundHeight;
       player.dy = 0;
       player.grounded = true;
       roses = [];
@@ -95,30 +98,30 @@
       ctx.save();
       ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
       ctx.scale(-1, 1); // Flip horizontally
-      ctx.font = "36px serif";
+      ctx.font = `${emojiSize}px serif`;
       ctx.fillText("🏃‍♀️", -player.width / 2, player.height / 2);
       ctx.restore();
     }
 
     function drawRoses() {
-      ctx.font = "32px serif";
+      ctx.font = `${emojiSize}px serif`;
       roses.forEach(rose => {
-        ctx.fillText("🌹", rose.x, rose.y);
+        ctx.fillText("🌹", rose.x, rose.y + emojiSize); // Draw from bottom baseline
       });
     }
 
     function updateRoses() {
       for (let i = roses.length - 1; i >= 0; i--) {
         roses[i].x -= 5;
-        if (roses[i].x + 30 < 0) {
+        if (roses[i].x + emojiSize < 0) {
           roses.splice(i, 1);
           score++;
           document.getElementById("score").innerText = "Score: " + score;
         } else if (
           roses[i].x < player.x + player.width &&
-          roses[i].x + 24 > player.x &&
+          roses[i].x + emojiSize > player.x &&
           roses[i].y < player.y + player.height &&
-          roses[i].y + 24 > player.y
+          roses[i].y + emojiSize > player.y
         ) {
           gameOver = true;
           document.getElementById("game-over").style.display = "block";
@@ -138,23 +141,24 @@
 
       // Draw ground
       ctx.fillStyle = "#ffccd5";
-      ctx.fillRect(0, canvas.height - 30, canvas.width, 30);
+      ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight);
 
       if (!gameOver) {
         // Update player
         player.dy += player.gravity;
         player.y += player.dy;
 
-        if (player.y + player.height >= canvas.height - 30) {
-          player.y = canvas.height - player.height - 30;
+        if (player.y + player.height >= canvas.height - groundHeight) {
+          player.y = canvas.height - player.height - groundHeight;
           player.dy = 0;
           player.grounded = true;
         }
 
+        // Add new roses randomly
         if (Math.random() < 0.02) {
           roses.push({
             x: canvas.width,
-            y: canvas.height - 30 - 36
+            y: canvas.height - groundHeight - emojiSize
           });
         }
 
@@ -186,7 +190,7 @@
       }
     });
 
-    // Initialize game
+    // Start the game
     resetGame();
     update();
   </script>
