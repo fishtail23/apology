@@ -4,10 +4,7 @@
   <meta charset="UTF-8" />
   <title>I Suck (But I Love You)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Google Fonts for prettier text -->
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand&display=swap" rel="stylesheet">
-
-  <!-- 🌈 All your CSS goes here -->
   <style>
     * { box-sizing: border-box; }
     body {
@@ -139,29 +136,14 @@
       30% { opacity: 1; }
       100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
     }
-
-    /* 🌟 NEW BUTTON YOU CAN CLICK (for demo purposes) */
-    #click-me {
-      background-color: #ffc107;
-      border: none;
-      padding: 10px 20px;
-      font-size: 1rem;
-      margin-top: 2rem;
-      border-radius: 10px;
-      cursor: pointer;
-      color: #333;
-    }
   </style>
 </head>
-
 <body>
   <div id="start-screen">
     <h1>I Suck (But I Love You)</h1>
     <button onclick="startApp()">Tap to Begin</button>
   </div>
-
   <div id="pieces" style="display:none;"></div>
-
   <div id="final">
     <h2>💌 From Me to You</h2>
     <p>
@@ -171,11 +153,8 @@
       ❤️ Yours always (even when I suck)<br>
       – Your apologetic little baby
     </p>
-
-    <!-- 💛 DEMO BUTTON -->
     <button id="click-me">Click Me</button>
   </div>
-
   <div id="flowers">
     <img src="https://pm1.aminoapps.com/7235/0b2e85e4c8b01d131ba62ba1eae8f70fcab86849r1-530-370v2_hq.jpg" alt="Bouquet of flowers">
     <div class="buttons">
@@ -183,13 +162,11 @@
       <button class="no" onclick="alert('Mahaaaaniiiii 😭😭😭😭 try agaaaaiiiin')">لا</button>
     </div>
   </div>
-
-  <!-- Background music -->
-  <audio id="bg-music" preload="auto" loop>
-    <source src="https://cdn.pixabay.com/download/audio/2022/10/30/audio_1d78165978.mp3?filename=romantic-piano-126566.mp3" type="audio/mpeg">
-  </audio>
-
-  <!-- ⚡ All your JavaScript goes here -->
+  <div id="mini-game" style="display:none; margin-top: 3rem;">
+    <h2 style="color: #fff; font-family: 'Pacifico';">💖 Tap the Hearts!</h2>
+    <p id="score-display" style="font-size: 1.2rem;">Score: 0</p>
+    <p style="font-size: 0.9rem;">Tap as many floating hearts as you can!</p>
+  </div>
   <script>
     const messages = [
       "I suck habiby I know 😞",
@@ -199,58 +176,61 @@
       "I love you so much I swear to god I really do ❤️",
       "I just truly love you with all my heart ❤️"
     ];
-
     function startApp() {
       document.getElementById("start-screen").style.display = "none";
       document.getElementById("pieces").style.display = "flex";
-
-      const audio = document.getElementById("bg-music");
-      audio.play().catch(() => {});
-
-      const container = document.getElementById("pieces");
-      container.innerHTML = "";
-
-      let revealed = 0;
-      messages.forEach(msg => {
-        const div = document.createElement("div");
+      let container = document.getElementById("pieces");
+      messages.forEach((msg, index) => {
+        let div = document.createElement("div");
         div.className = "piece";
-        div.innerText = "Tap me";
-        div.addEventListener("click", () => {
-          if (!div.classList.contains("revealed")) {
-            div.classList.add("revealed");
-            div.innerText = msg;
-            revealed++;
-            if (revealed === messages.length) {
-              document.getElementById("final").style.display = "block";
-              setTimeout(() => {
-                document.getElementById("flowers").style.display = "block";
-              }, 1000);
-            }
+        div.innerText = `Piece ${index + 1}`;
+        div.onclick = () => {
+          div.innerText = msg;
+          div.classList.add("revealed");
+          if (document.querySelectorAll(".piece.revealed").length === messages.length) {
+            document.getElementById("final").style.display = "block";
           }
-        });
+        };
         container.appendChild(div);
       });
-
-      // Create floating hearts
-      setInterval(() => {
+    }
+    document.getElementById("click-me").onclick = () => {
+      document.getElementById("flowers").style.display = "block";
+      document.getElementById("mini-game").style.display = "block";
+      launchMiniGame();
+    };
+    let score = 0;
+    function launchMiniGame() {
+      const heartEmoji = "💖";
+      const spawnHeart = () => {
         const heart = document.createElement("div");
         heart.className = "heart";
-        heart.style.left = Math.random() * 100 + "vw";
-        heart.style.animationDuration = (6 + Math.random() * 4) + "s";
+        heart.style.left = Math.random() * 90 + "vw";
+        heart.style.top = "100vh";
+        heart.innerText = heartEmoji;
+        heart.style.position = "absolute";
+        heart.style.cursor = "pointer";
+        heart.style.zIndex = 999;
+        heart.onclick = () => {
+          score++;
+          document.getElementById("score-display").innerText = "Score: " + score;
+          heart.remove();
+          if (score === 10) alert("You're the real heart collector! 💘 I love you even more!");
+        };
         document.body.appendChild(heart);
-        setTimeout(() => heart.remove(), 10000);
-      }, 600);
+        let moveUp = setInterval(() => {
+          const top = parseFloat(heart.style.top);
+          if (top < -30) {
+            heart.remove();
+            clearInterval(moveUp);
+          } else {
+            heart.style.top = (top - 2) + "px";
+          }
+        }, 30);
+        setTimeout(() => heart.remove(), 7000);
+      };
+      setInterval(spawnHeart, 1200);
     }
-
-    // NEW: click-me button alert
-    document.addEventListener("DOMContentLoaded", () => {
-      const btn = document.getElementById("click-me");
-      if (btn) {
-        btn.addEventListener("click", () => {
-          alert("Just wanted to remind you that I love you! ❤️");
-        });
-      }
-    });
   </script>
 </body>
 </html>
