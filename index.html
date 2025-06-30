@@ -85,7 +85,7 @@
     }
 
     const GRAVITY = UNIT * 0.07;
-    const JUMP_POWER = -UNIT * 0.6;
+    const JUMP_POWER = -UNIT * 0.7; // Restored correct jump power
 
     function drawPlayer() {
       const sprite = player.isOnGround ? (frameCounter % 20 < 10 ? walkA : walkB) : jumpImg;
@@ -162,7 +162,7 @@
       if (obstacleTimer >= nextObstacleIn) {
         spawnObstacle();
         obstacleTimer = 0;
-        nextObstacleIn = Math.floor(80 + Math.random() * 100); // consistent spacing
+        nextObstacleIn = Math.floor(80 + Math.random() * 100); // More consistent gap
       }
     }
 
