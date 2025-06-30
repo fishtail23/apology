@@ -1,157 +1,166 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Prize Wheel of Love</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <title>Love Platformer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
+    html, body {
       margin: 0;
       padding: 0;
+      overflow: hidden;
+      background: url('https://media.tenor.com/fOP9jA3HaMsAAAAi/hearts-of-happiness-hearts.gif') center/cover no-repeat fixed;
+    }
+
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background: #ffdde1;
+      border: 4px solid white;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      margin-top: 40px;
+    }
+
+    h1 {
+      text-align: center;
       font-family: 'Arial', sans-serif;
-      background: url('https://media.tenor.com/fOP9jA3HaMsAAAAi/hearts-of-happiness-hearts.gif') no-repeat center center fixed;
-      background-size: cover;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    .container {
-      position: relative;
-      width: 320px;
-      height: 320px;
-      margin-bottom: 40px;
-    }
-
-    .wheel {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      border: 6px solid #fff;
-      position: relative;
-      transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
-      overflow: hidden;
-    }
-
-    .slice {
-      position: absolute;
-      width: 50%;
-      height: 50%;
-      top: 50%;
-      left: 50%;
-      transform-origin: 0% 0%;
-      clip-path: polygon(0 0, 100% 0, 0 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      font-weight: bold;
       color: white;
-    }
-
-    .slice:nth-child(1) { transform: rotate(0deg); background: #ff4d6d; }
-    .slice:nth-child(2) { transform: rotate(60deg); background: #ff85a1; }
-    .slice:nth-child(3) { transform: rotate(120deg); background: #ffb3c6; }
-    .slice:nth-child(4) { transform: rotate(180deg); background: #ffc6e2; }
-    .slice:nth-child(5) { transform: rotate(240deg); background: #ff85a1; }
-    .slice:nth-child(6) { transform: rotate(300deg); background: #ff4d6d; }
-
-    .pointer {
-      position: absolute;
-      top: -20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 12px solid transparent;
-      border-right: 12px solid transparent;
-      border-bottom: 24px solid white;
-      z-index: 10;
-    }
-
-    .pegs {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-    }
-
-    .peg {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      background: yellow;
-      border-radius: 50%;
-      top: -5px;
-      left: 50%;
-      transform-origin: center 160px;
-    }
-
-    .btn {
-      padding: 12px 24px;
-      font-size: 1.1rem;
-      background: #ff69b4;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: bold;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      text-shadow: 2px 2px 8px #000;
     }
   </style>
 </head>
 <body>
-
-  <div class="container">
-    <div class="pointer"></div>
-    <div class="wheel" id="wheel">
-      <div class="slice">💕</div>
-      <div class="slice">😘</div>
-      <div class="slice">🥰</div>
-      <div class="slice">💖</div>
-      <div class="slice">🌹</div>
-      <div class="slice">💌</div>
-    </div>
-    <div class="pegs" id="pegs"></div>
-  </div>
-
-  <button class="btn" onclick="spinWheel()">Spin the Wheel</button>
+  <h1>🌹 Collect the Roses for Her 🌹</h1>
+  <canvas id="game" width="640" height="400"></canvas>
 
   <script>
-    const wheel = document.getElementById("wheel");
-    const pegs = document.getElementById("pegs");
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
 
-    const totalSlices = 6;
-    let currentRotation = 0;
+    const keys = {};
+    document.addEventListener("keydown", e => keys[e.code] = true);
+    document.addEventListener("keyup", e => keys[e.code] = false);
 
-    // Add pegs
-    for (let i = 0; i < totalSlices; i++) {
-      const peg = document.createElement("div");
-      peg.classList.add("peg");
-      peg.style.transform = `rotate(${i * (360 / totalSlices)}deg) translateX(-50%)`;
-      pegs.appendChild(peg);
+    const player = {
+      x: 50, y: 300,
+      width: 32, height: 32,
+      vx: 0, vy: 0,
+      color: "hotpink",
+      onGround: false
+    };
+
+    const gravity = 0.5;
+    const jumpPower = -10;
+
+    const platforms = [
+      { x: 0, y: 370, width: 640, height: 30 },
+      { x: 100, y: 300, width: 100, height: 10 },
+      { x: 250, y: 250, width: 100, height: 10 },
+      { x: 400, y: 200, width: 100, height: 10 },
+    ];
+
+    const roses = [
+      { x: 120, y: 270, collected: false },
+      { x: 270, y: 220, collected: false },
+      { x: 420, y: 170, collected: false },
+    ];
+
+    let score = 0;
+
+    function drawPlayer() {
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.width, player.height);
     }
 
-    function spinWheel() {
-      const extraSpins = 5; // Number of full rotations
-      const sliceAngle = 360 / totalSlices;
-      const randomSlice = Math.floor(Math.random() * totalSlices);
-      const degrees = randomSlice * sliceAngle;
-      const totalDegrees = 360 * extraSpins + degrees;
-
-      currentRotation += totalDegrees;
-      wheel.style.transform = `rotate(${currentRotation}deg)`;
+    function drawPlatforms() {
+      ctx.fillStyle = "#fff";
+      platforms.forEach(p => ctx.fillRect(p.x, p.y, p.width, p.height));
     }
+
+    function drawRoses() {
+      roses.forEach(rose => {
+        if (!rose.collected) {
+          ctx.fillStyle = "red";
+          ctx.beginPath();
+          ctx.arc(rose.x, rose.y, 8, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+    }
+
+    function showScore() {
+      ctx.fillStyle = "white";
+      ctx.font = "20px Arial";
+      ctx.fillText("Roses: " + score + " / " + roses.length, 10, 30);
+    }
+
+    function update() {
+      // Movement
+      player.vx = 0;
+      if (keys["ArrowLeft"]) player.vx = -3;
+      if (keys["ArrowRight"]) player.vx = 3;
+      if (keys["Space"] && player.onGround) {
+        player.vy = jumpPower;
+        player.onGround = false;
+      }
+
+      player.vy += gravity;
+      player.x += player.vx;
+      player.y += player.vy;
+
+      // Platform collision
+      player.onGround = false;
+      platforms.forEach(p => {
+        if (player.x < p.x + p.width &&
+            player.x + player.width > p.x &&
+            player.y + player.height < p.y + player.vy + p.height &&
+            player.y + player.height > p.y) {
+          player.y = p.y - player.height;
+          player.vy = 0;
+          player.onGround = true;
+        }
+      });
+
+      // Rose collection
+      roses.forEach(rose => {
+        if (!rose.collected &&
+            player.x < rose.x + 8 &&
+            player.x + player.width > rose.x - 8 &&
+            player.y < rose.y + 8 &&
+            player.y + player.height > rose.y - 8) {
+          rose.collected = true;
+          score++;
+        }
+      });
+
+      // Clamp
+      if (player.y > canvas.height) {
+        player.x = 50;
+        player.y = 300;
+        score = 0;
+        roses.forEach(r => r.collected = false);
+      }
+    }
+
+    function loop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      update();
+      drawPlatforms();
+      drawRoses();
+      drawPlayer();
+      showScore();
+
+      if (score === roses.length) {
+        ctx.fillStyle = "white";
+        ctx.font = "28px Arial";
+        ctx.fillText("You got them all! 💘", 200, 100);
+      }
+
+      requestAnimationFrame(loop);
+    }
+
+    loop();
   </script>
-
 </body>
 </html>
