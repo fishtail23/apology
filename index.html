@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Love Platformer</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <title>Collect Roses</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     html, body {
       margin: 0;
@@ -14,12 +14,11 @@
 
     canvas {
       display: block;
-      margin: 0 auto;
+      margin: 40px auto 0;
       background: #fff0f5;
       border: 4px solid white;
       border-radius: 16px;
       box-shadow: 0 0 20px rgba(0,0,0,0.3);
-      margin-top: 40px;
     }
 
     h1 {
@@ -67,11 +66,12 @@
 
     let score = 0;
 
+    // Replace these URLs with working ones
     const roseImg = new Image();
-    roseImg.src = "https://cdn-icons-png.flaticon.com/512/616/616408.png";
+    roseImg.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Rose_icon.svg/1024px-Rose_icon.svg.png";
 
     const playerImg = new Image();
-    playerImg.src = "https://i.imgur.com/0rVeh4q.png"; // pixel boy
+    playerImg.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Emojione_1F466.svg/512px-Emojione_1F466.svg.png";
 
     function drawPlayer() {
       ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
@@ -97,7 +97,6 @@
     }
 
     function update() {
-      // Movement
       player.vx = 0;
       if (keys["ArrowLeft"]) player.vx = -3;
       if (keys["ArrowRight"]) player.vx = 3;
@@ -110,7 +109,6 @@
       player.x += player.vx;
       player.y += player.vy;
 
-      // Platform collision
       player.onGround = false;
       platforms.forEach(p => {
         if (player.x < p.x + p.width &&
@@ -123,7 +121,6 @@
         }
       });
 
-      // Rose collection
       roses.forEach(rose => {
         if (!rose.collected &&
             player.x < rose.x + 12 &&
@@ -135,7 +132,6 @@
         }
       });
 
-      // Reset if falls
       if (player.y > canvas.height) {
         player.x = 50;
         player.y = 300;
