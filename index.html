@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Mini Runner</title>
   <style>
     html, body {
@@ -14,9 +14,11 @@
     }
 
     canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
       display: block;
-      width: 100vw;
-      height: 100vh;
+      background: #ffe4f2;
     }
 
     #restartBtn {
@@ -31,6 +33,7 @@
       border: none;
       border-radius: 10px;
       display: none;
+      z-index: 10;
     }
   </style>
 </head>
@@ -43,14 +46,23 @@
     const ctx = canvas.getContext("2d");
     const restartBtn = document.getElementById("restartBtn");
 
+    // === Proper Fullscreen Mobile Canvas ===
     function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      canvas.style.width = window.innerWidth + "px";
+      canvas.style.height = window.innerHeight + "px";
+      ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset any transform
+      ctx.scale(dpr, dpr);
+      UNIT = window.innerHeight / 15;
+      updateBackgroundScale();
     }
-    window.addEventListener("resize", resizeCanvas);
-    resizeCanvas();
 
-    const UNIT = canvas.height / 15;
+    window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("orientationchange", resizeCanvas);
+    let UNIT = window.innerHeight / 15;
+    resizeCanvas();
 
     let player, obstacles, score, gameRunning, frameCounter;
     let obstacleTimer = 0;
@@ -58,10 +70,8 @@
 
     const walkA = new Image();
     walkA.src = "assets/character_pink_walk_a.png";
-
     const walkB = new Image();
     walkB.src = "assets/character_pink_walk_b.png";
-
     const jumpImg = new Image();
     jumpImg.src = "assets/character_pink_jump.png";
 
@@ -72,15 +82,20 @@
     let bgReady = false;
 
     background.onload = () => {
-      const targetHeight = UNIT * 5; // Adjust height to fit nicely
-      bgScale = targetHeight / background.height;
+      updateBackgroundScale();
       bgReady = true;
     };
+
+    function updateBackgroundScale() {
+      if (!background.complete) return;
+      const targetHeight = UNIT * 5;
+      bgScale = targetHeight / background.height;
+    }
 
     function initGame() {
       player = {
         x: UNIT * 2,
-        y: canvas.height - UNIT * 2,
+        y: window.innerHeight - UNIT * 2,
         width: UNIT * 1.2,
         height: UNIT * 1.2,
         velocityY: 0,
@@ -104,9 +119,9 @@
 
       const tileW = background.width * bgScale;
       const tileH = background.height * bgScale;
-      const y = canvas.height - tileH;
+      const y = window.innerHeight - tileH;
 
-      for (let x = 0; x < canvas.width; x += tileW) {
+      for (let x = 0; x < window.innerWidth; x += tileW) {
         ctx.drawImage(background, x, y, tileW, tileH);
       }
     }
@@ -132,8 +147,8 @@
     function spawnObstacle() {
       const height = UNIT * 0.8;
       obstacles.push({
-        x: canvas.width,
-        y: canvas.height - height,
+        x: window.innerWidth,
+        y: window.innerHeight - height,
         width: UNIT * 0.7,
         height: height
       });
@@ -143,8 +158,9 @@
       player.velocityY += GRAVITY;
       player.y += player.velocityY;
 
-      if (player.y + player.height >= canvas.height) {
-        player.y = canvas.height - player.height;
+      const ground = window.innerHeight - player.height;
+      if (player.y >= ground) {
+        player.y = ground;
         player.velocityY = 0;
         player.isOnGround = true;
       } else {
