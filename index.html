@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Collect Roses</title>
+  <title>Collect the Roses Game</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     html, body {
@@ -30,7 +30,7 @@
   </style>
 </head>
 <body>
-  <h1>🌹 Collect the Roses for Her 🌹</h1>
+  <h1>🌹 Collect the Roses 🌹</h1>
   <canvas id="game" width="640" height="400"></canvas>
 
   <script>
@@ -45,7 +45,8 @@
       x: 50, y: 300,
       width: 32, height: 32,
       vx: 0, vy: 0,
-      onGround: false
+      onGround: false,
+      color: "#333"
     };
 
     const gravity = 0.5;
@@ -66,15 +67,9 @@
 
     let score = 0;
 
-    // Replace these URLs with working ones
-    const roseImg = new Image();
-    roseImg.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Rose_icon.svg/1024px-Rose_icon.svg.png";
-
-    const playerImg = new Image();
-    playerImg.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Emojione_1F466.svg/512px-Emojione_1F466.svg.png";
-
     function drawPlayer() {
-      ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.width, player.height);
     }
 
     function drawPlatforms() {
@@ -85,13 +80,18 @@
     function drawRoses() {
       roses.forEach(rose => {
         if (!rose.collected) {
-          ctx.drawImage(roseImg, rose.x - 12, rose.y - 12, 24, 24);
+          ctx.beginPath();
+          ctx.arc(rose.x, rose.y, 10, 0, Math.PI * 2);
+          ctx.fillStyle = "red";
+          ctx.fill();
+          ctx.strokeStyle = "#990000";
+          ctx.stroke();
         }
       });
     }
 
     function showScore() {
-      ctx.fillStyle = "white";
+      ctx.fillStyle = "#000";
       ctx.font = "20px Arial";
       ctx.fillText("Roses: " + score + " / " + roses.length, 10, 30);
     }
@@ -123,16 +123,17 @@
 
       roses.forEach(rose => {
         if (!rose.collected &&
-            player.x < rose.x + 12 &&
-            player.x + player.width > rose.x - 12 &&
-            player.y < rose.y + 12 &&
-            player.y + player.height > rose.y - 12) {
+            player.x < rose.x + 10 &&
+            player.x + player.width > rose.x - 10 &&
+            player.y < rose.y + 10 &&
+            player.y + player.height > rose.y - 10) {
           rose.collected = true;
           score++;
         }
       });
 
       if (player.y > canvas.height) {
+        // Reset game
         player.x = 50;
         player.y = 300;
         score = 0;
@@ -149,8 +150,8 @@
       showScore();
 
       if (score === roses.length) {
-        ctx.fillStyle = "white";
-        ctx.font = "28px Arial";
+        ctx.fillStyle = "#000";
+        ctx.font = "26px Arial";
         ctx.fillText("You got them all! 💘", 200, 100);
       }
 
