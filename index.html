@@ -56,7 +56,6 @@
     const GRAVITY = UNIT * 0.2;
     const JUMP_POWER = -UNIT * 0.28;
 
-    // Load images
     const walkA = new Image(); walkA.src = "assets/character_pink_walk_a.png";
     const walkB = new Image(); walkB.src = "assets/character_pink_walk_b.png";
     const jumpImg = new Image(); jumpImg.src = "assets/character_pink_jump.png";
@@ -74,9 +73,11 @@
       return img;
     });
 
-    let player, obstacles, score, gameRunning, frameCounter;
+    let player, obstacles, score, frameCounter;
+    let gameRunning = false;
     let obstacleTimer = 0;
     let nextObstacleIn = 100;
+    let animationFrame;
 
     function initGame() {
       player = {
@@ -96,13 +97,13 @@
       nextObstacleIn = 100;
       restartBtn.style.display = "none";
 
-      requestAnimationFrame(gameLoop); // Restart loop
+      cancelAnimationFrame(animationFrame);
+      animationFrame = requestAnimationFrame(gameLoop);
     }
 
     function drawBackground() {
       ctx.fillStyle = "#ffe4f2";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-
       const imgHeight = (bgImage.height / bgImage.width) * canvas.width;
       const y = canvas.height - imgHeight;
       ctx.drawImage(bgImage, 0, y, canvas.width, imgHeight);
@@ -191,6 +192,7 @@
         ) {
           gameRunning = false;
           restartBtn.style.display = "block";
+          return;
         }
       }
     }
@@ -222,9 +224,7 @@
     function gameLoop() {
       update();
       draw();
-      if (gameRunning) {
-        requestAnimationFrame(gameLoop);
-      }
+      animationFrame = requestAnimationFrame(gameLoop);
     }
 
     function jump() {
@@ -234,7 +234,6 @@
       }
     }
 
-    // Jump inputs
     document.addEventListener("keydown", e => {
       if (e.code === "Space" || e.code === "ArrowUp") jump();
     });
