@@ -70,6 +70,17 @@
     const floorTile = new Image();
     floorTile.src = "assets/terrain_dirt_block_top.png";
 
+    const fence = new Image();
+    fence.src = "assets/fence.png";
+
+    const fenceBroken = new Image();
+    fenceBroken.src = "assets/fence_broken.png";
+
+    const ladderMiddle = new Image();
+    ladderMiddle.src = "assets/ladder_middle.png";
+
+    const obstacleImages = [fence, fenceBroken, ladderMiddle];
+
     let player, obstacles, score, gameRunning, frameCounter;
     let obstacleTimer = 0;
     let nextObstacleIn = 100;
@@ -118,9 +129,8 @@
     }
 
     function drawObstacles() {
-      ctx.fillStyle = "#e63946";
       obstacles.forEach(obs => {
-        ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+        ctx.drawImage(obs.image, obs.x, obs.y, obs.width, obs.height);
       });
     }
 
@@ -131,12 +141,16 @@
     }
 
     function spawnObstacle() {
-      const height = UNIT * 0.8;
+      const height = UNIT;
+      const width = UNIT;
+      const randomImg = obstacleImages[Math.floor(Math.random() * obstacleImages.length)];
+
       obstacles.push({
         x: canvas.width,
         y: canvas.height - FLOOR_HEIGHT - height,
-        width: UNIT * 0.7,
-        height: height
+        width,
+        height,
+        image: randomImg
       });
     }
 
@@ -227,8 +241,8 @@
       initGame();
     });
 
-    // Load all images before starting
-    const images = [walkA, walkB, jumpImg, bgImage, floorTile];
+    // Wait for all images to load before starting
+    const images = [walkA, walkB, jumpImg, bgImage, floorTile, fence, fenceBroken, ladderMiddle];
     let loaded = 0;
     images.forEach(img => {
       img.onload = () => {
