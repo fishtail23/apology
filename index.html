@@ -2,281 +2,164 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Running Game</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style><script>
-  const canvas = document.getElementById("game");
-  const ctx = canvas.getContext("2d");
-
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  let gravity = 0.5;
-  let isJumping = false;
-  let score = 0;
-  let gameOver = false;
-
-  const walkA = new Image();
-  walkA.src = "assets/character_pink_walk_a.png";
-
-  const walkB = new Image();
-  walkB.src = "assets/character_pink_walk_b.png";
-
-  const jumpImg = new Image();
-  jumpImg.src = "assets/character_pink_jump.png";
-
-  let currentSprite = walkA;
-
-  const player = {
-    x: 50,
-    y: canvas.height - 100,
-    width: 50,
-    height: 50,
-    vy: 0,
-    onGround: true
-  };
-
-  const obstacles = [];
-
-  function drawPlayer() {
-    ctx.drawImage(currentSprite, player.x, player.y, player.width, player.height);
-  }
-
-  function createObstacle() {
-    const size = 40;
-    obstacles.push({
-      x: canvas.width,
-      y: canvas.height - size,
-      width: size,
-      height: size,
-    });
-  }
-
-  function drawObstacles() {
-    ctx.fillStyle = "#ff4d4d";
-    for (let obs of obstacles) {
-      ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-    }
-  }
-
-  function update() {
-    if (gameOver) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    currentSprite = isJumping ? jumpImg : (Math.floor(Date.now() / 100) % 2 === 0 ? walkA : walkB);
-
-    drawPlayer();
-    drawObstacles();
-
-    player.y += player.vy;
-    player.vy += gravity;
-
-    if (player.y + player.height >= canvas.height) {
-      player.y = canvas.height - player.height;
-      player.vy = 0;
-      player.onGround = true;
-      isJumping = false;
-    }
-
-    for (let obs of obstacles) {
-      obs.x -= 6;
-
-      // collision
-      if (
-        player.x < obs.x + obs.width &&
-        player.x + player.width > obs.x &&
-        player.y < obs.y + obs.height &&
-        player.y + player.height > obs.y
-      ) {
-        gameOver = true;
-      }
-    }
-
-    score++;
-    ctx.fillStyle = "black";
-    ctx.font = "20px sans-serif";
-    ctx.fillText("Score: " + score, 20, 40);
-
-    requestAnimationFrame(update);
-  }
-
-  setInterval(() => {
-    if (!gameOver) createObstacle();
-  }, 1400);
-
-  update();
-
-  function jump() {
-    if (player.onGround) {
-      player.vy = -12;
-      player.onGround = false;
-      isJumping = true;
-    }
-  }
-
-  document.addEventListener("keydown", e => {
-    if (e.code === "Space") jump();
-  });
-
-  document.addEventListener("touchstart", jump);
-</script>
-
+  <title>Mini Runner</title>
+  <style>
     * {
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
     }
-
+    canvas {
+      display: block;
+      background: #f0f0f0;
+      margin: 0 auto;
+    }
     body {
-      background: #f8f8f8;
-      overflow: hidden;
+      background: #ffe4f2;
       font-family: sans-serif;
-    }
-
-    #game {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      background: linear-gradient(to top, #aad, #eef);
       overflow: hidden;
-    }
-
-    #character {
-      position: absolute;
-      bottom: 10px;
-      left: 50px;
-      width: 60px;
-      height: 60px;
-      background-size: cover;
-    }
-
-    .obstacle {
-      position: absolute;
-      bottom: 10px;
-      width: 40px;
-      height: 40px;
-      background: red;
-      border-radius: 10px;
-    }
-
-    #score {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      font-size: 1.2rem;
-      color: #333;
-      background: white;
-      padding: 4px 8px;
-      border-radius: 6px;
-    }
-
-    #gameOver {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 2rem;
-      color: #d00;
-      display: none;
     }
   </style>
 </head>
 <body>
-  <div id="game">
-    <div id="character"></div>
-    <div id="score">Score: 0</div>
-    <div id="gameOver">Game Over</div>
-  </div>
+  <canvas id="gameCanvas" width="480" height="320"></canvas>
 
   <script>
-    const game = document.getElementById('game');
-    const character = document.getElementById('character');
-    const scoreEl = document.getElementById('score');
-    const gameOverEl = document.getElementById('gameOver');
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
 
-    const walkA = 'character_pink_walk_a.png';
-    const walkB = 'character_pink_walk_b.png';
-    const jumpImg = 'character_pink_jump.png';
+    const GRAVITY = 0.5;
+    const JUMP_POWER = -10;
 
+    let playerY = 240;
+    let velocityY = 0;
+    let isJumping = false;
+
+    let isOnGround = true;
+    let currentFrame = 0;
+    let frameCounter = 0;
+
+    // Load images
+    const walkA = new Image();
+    walkA.src = "assets/character_pink_walk_a.png";
+
+    const walkB = new Image();
+    walkB.src = "assets/character_pink_walk_b.png";
+
+    const jumpImg = new Image();
+    jumpImg.src = "assets/character_pink_jump.png";
+
+    const player = {
+      x: 50,
+      y: playerY,
+      width: 32,
+      height: 32,
+    };
+
+    const obstacles = [];
     let score = 0;
-    let jumping = false;
-    let jumpVelocity = 0;
-    let gravity = 0.8;
-    let charY = 0;
-    let groundY = 10;
 
-    let walkFrame = true;
-    setInterval(() => {
-      if (!jumping) {
-        character.style.backgroundImage = `url(${walkFrame ? walkA : walkB})`;
-        walkFrame = !walkFrame;
-      }
-    }, 200);
-
-    function jump() {
-      if (!jumping) {
-        jumping = true;
-        jumpVelocity = 12;
-        character.style.backgroundImage = `url(${jumpImg})`;
-      }
+    function spawnObstacle() {
+      const obstacle = {
+        x: canvas.width,
+        y: 250,
+        width: 20,
+        height: 40,
+      };
+      obstacles.push(obstacle);
     }
 
-    function updateGame() {
-      // Jump physics
-      if (jumping) {
-        charY += jumpVelocity;
-        jumpVelocity -= gravity;
-        if (charY <= 0) {
-          charY = 0;
-          jumping = false;
-        }
-        character.style.bottom = `${groundY + charY}px`;
-      }
+    function drawPlayer() {
+      const sprite = isOnGround
+        ? (frameCounter % 20 < 10 ? walkA : walkB)
+        : jumpImg;
+      ctx.drawImage(sprite, player.x, player.y, player.width, player.height);
+    }
 
-      // Move obstacles
-      document.querySelectorAll('.obstacle').forEach(ob => {
-        let left = parseFloat(ob.style.left);
-        ob.style.left = `${left - 5}px`;
-
-        // Collision
-        if (
-          left < 110 &&
-          left > 40 &&
-          !jumping &&
-          parseFloat(ob.style.bottom) < 70
-        ) {
-          gameOverEl.style.display = 'block';
-          clearInterval(gameLoop);
-          clearInterval(obstacleInterval);
-        }
-
-        if (left < -50) ob.remove();
+    function drawObstacles() {
+      ctx.fillStyle = "red";
+      obstacles.forEach((obstacle) => {
+        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
       });
     }
 
-    function spawnObstacle() {
-      const ob = document.createElement('div');
-      ob.className = 'obstacle';
-      ob.style.left = '100vw';
-      game.appendChild(ob);
+    function update() {
+      frameCounter++;
+
+      // Gravity
+      velocityY += GRAVITY;
+      player.y += velocityY;
+
+      // Ground check
+      if (player.y >= 240) {
+        player.y = 240;
+        velocityY = 0;
+        isOnGround = true;
+      } else {
+        isOnGround = false;
+      }
+
+      // Move obstacles
+      for (let i = obstacles.length - 1; i >= 0; i--) {
+        obstacles[i].x -= 5;
+        if (obstacles[i].x + obstacles[i].width < 0) {
+          obstacles.splice(i, 1);
+          score++;
+        }
+
+        // Collision
+        if (
+          player.x < obstacles[i].x + obstacles[i].width &&
+          player.x + player.width > obstacles[i].x &&
+          player.y < obstacles[i].y + obstacles[i].height &&
+          player.y + player.height > obstacles[i].y
+        ) {
+          alert("Game Over! Your score: " + score);
+          document.location.reload();
+        }
+      }
+
+      // Add new obstacle randomly
+      if (Math.random() < 0.02) {
+        spawnObstacle();
+      }
     }
 
-    document.addEventListener('keydown', e => {
-      if (e.code === 'Space' || e.code === 'ArrowUp') jump();
+    function drawScore() {
+      ctx.fillStyle = "#000";
+      ctx.font = "16px Arial";
+      ctx.fillText("Score: " + score, 10, 20);
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      update();
+      drawPlayer();
+      drawObstacles();
+      drawScore();
+      requestAnimationFrame(gameLoop);
+    }
+
+    function jump() {
+      if (isOnGround) {
+        velocityY = JUMP_POWER;
+        isOnGround = false;
+      }
+    }
+
+    // Input handling
+    document.addEventListener("keydown", (e) => {
+      if (e.code === "Space" || e.code === "ArrowUp") {
+        jump();
+      }
     });
 
-    document.addEventListener('touchstart', jump);
+    canvas.addEventListener("touchstart", jump);
+    canvas.addEventListener("mousedown", jump);
 
-    let gameLoop = setInterval(() => {
-      updateGame();
-      score++;
-      scoreEl.textContent = `Score: ${score}`;
-    }, 30);
-
-    let obstacleInterval = setInterval(() => {
-      spawnObstacle();
-    }, 1500);
+    // Start game
+    gameLoop();
   </script>
 </body>
 </html>
