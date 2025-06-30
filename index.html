@@ -31,6 +31,7 @@
       border: none;
       border-radius: 10px;
       display: none;
+      z-index: 2;
     }
   </style>
 </head>
@@ -43,14 +44,26 @@
     const ctx = canvas.getContext("2d");
     const restartBtn = document.getElementById("restartBtn");
 
+    let UNIT;
+
     function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const dpr = window.devicePixelRatio || 1;
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
+
+      UNIT = Math.min(width, height) / 15;
     }
+
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
-
-    const UNIT = canvas.height / 15;
 
     const walkA = new Image();
     walkA.src = "assets/character_pink_walk_a.png";
@@ -68,13 +81,13 @@
     let obstacleTimer = 0;
     let nextObstacleIn = 100;
 
-    const GRAVITY = UNIT * 0.02;
-    const JUMP_POWER = -UNIT * 0.28;
+    const GRAVITY = 0.02;
+    const JUMP_POWER = -0.28;
 
     function initGame() {
       player = {
         x: UNIT * 2,
-        y: canvas.height - UNIT * 2,
+        y: canvas.height / window.devicePixelRatio - UNIT * 2,
         width: UNIT * 1.2,
         height: UNIT * 1.2,
         velocityY: 0,
@@ -91,15 +104,14 @@
     }
 
     function drawBackground() {
-      // Fill with background color
       ctx.fillStyle = "#ffe4f2";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio);
 
-      // Draw background image aligned to bottom
-      const imgHeight = (bgImage.height / bgImage.width) * canvas.width;
-      const y = canvas.height - imgHeight;
+      const canvasWidth = canvas.width / window.devicePixelRatio;
+      const imgHeight = (bgImage.height / bgImage.width) * canvasWidth;
+      const y = canvas.height / window.devicePixelRatio - imgHeight;
 
-      ctx.drawImage(bgImage, 0, y, canvas.width, imgHeight);
+      ctx.drawImage(bgImage, 0, y, canvasWidth, imgHeight);
     }
 
     function drawPlayer() {
@@ -123,19 +135,21 @@
     function spawnObstacle() {
       const height = UNIT * 0.8;
       obstacles.push({
-        x: canvas.width,
-        y: canvas.height - height,
+        x: canvas.width / window.devicePixelRatio,
+        y: canvas.height / window.devicePixelRatio - height,
         width: UNIT * 0.7,
         height: height
       });
     }
 
     function updatePlayer() {
-      player.velocityY += GRAVITY;
+      player.velocityY += GRAVITY * UNIT;
       player.y += player.velocityY;
 
-      if (player.y + player.height >= canvas.height) {
-        player.y = canvas.height - player.height;
+      const ground = canvas.height / window.devicePixelRatio - player.height;
+
+      if (player.y >= ground) {
+        player.y = ground;
         player.velocityY = 0;
         player.isOnGround = true;
       } else {
@@ -196,7 +210,7 @@
 
     function jump() {
       if (player.isOnGround && gameRunning) {
-        player.velocityY = JUMP_POWER;
+        player.velocityY = JUMP_POWER * UNIT;
         player.isOnGround = false;
       }
     }
@@ -215,8 +229,7 @@
       initGame();
     });
 
-    // Wait for all images to load before starting game
-    let imagesToLoad = [walkA, walkB, jumpImg, bgImage];
+    const imagesToLoad = [walkA, walkB, jumpImg, bgImage];
     let loadedCount = 0;
 
     imagesToLoad.forEach(img => {
