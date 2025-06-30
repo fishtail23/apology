@@ -129,12 +129,26 @@
       background-size: cover;
       animation: float 6s linear infinite;
       opacity: 0.8;
-      pointer-events: none;
+      cursor: pointer;
+      pointer-events: auto;
     }
     @keyframes float {
       0% { transform: translateY(100vh) scale(1); opacity: 0; }
       30% { opacity: 1; }
       100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+    }
+
+    #score {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.5);
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 1rem;
+      color: #fff;
+      z-index: 10000;
+      font-family: 'Quicksand', sans-serif;
     }
   </style>
 </head>
@@ -143,7 +157,10 @@
     <h1>I Suck (But I Love You)</h1>
     <button onclick="startApp()">Tap to Begin</button>
   </div>
+
+  <div id="score" style="display:none;">❤️ Taps: 0</div>
   <div id="pieces" style="display:none;"></div>
+
   <div id="final">
     <h2>💌 From Me to You</h2>
     <p>
@@ -153,8 +170,8 @@
       ❤️ Yours always (even when I suck)<br>
       – Your apologetic little baby
     </p>
-    <button id="click-me">Click Me</button>
   </div>
+
   <div id="flowers">
     <img src="https://pm1.aminoapps.com/7235/0b2e85e4c8b01d131ba62ba1eae8f70fcab86849r1-530-370v2_hq.jpg" alt="Bouquet of flowers">
     <div class="buttons">
@@ -162,11 +179,11 @@
       <button class="no" onclick="alert('Mahaaaaniiiii 😭😭😭😭 try agaaaaiiiin')">لا</button>
     </div>
   </div>
-  <div id="mini-game" style="display:none; margin-top: 3rem;">
-    <h2 style="color: #fff; font-family: 'Pacifico';">💖 Tap the Hearts!</h2>
-    <p id="score-display" style="font-size: 1.2rem;">Score: 0</p>
-    <p style="font-size: 0.9rem;">Tap as many floating hearts as you can!</p>
-  </div>
+
+  <audio id="bg-music" preload="auto" loop>
+    <source src="https://cdn.pixabay.com/download/audio/2022/10/30/audio_1d78165978.mp3?filename=romantic-piano-126566.mp3" type="audio/mpeg">
+  </audio>
+
   <script>
     const messages = [
       "I suck habiby I know 😞",
@@ -176,60 +193,54 @@
       "I love you so much I swear to god I really do ❤️",
       "I just truly love you with all my heart ❤️"
     ];
+
+    let tapCount = 0;
+
     function startApp() {
       document.getElementById("start-screen").style.display = "none";
       document.getElementById("pieces").style.display = "flex";
-      let container = document.getElementById("pieces");
-      messages.forEach((msg, index) => {
-        let div = document.createElement("div");
+      document.getElementById("score").style.display = "block";
+
+      const audio = document.getElementById("bg-music");
+      audio.play().catch(() => {});
+
+      const container = document.getElementById("pieces");
+      container.innerHTML = "";
+
+      let revealed = 0;
+      messages.forEach(msg => {
+        const div = document.createElement("div");
         div.className = "piece";
-        div.innerText = `Piece ${index + 1}`;
-        div.onclick = () => {
-          div.innerText = msg;
-          div.classList.add("revealed");
-          if (document.querySelectorAll(".piece.revealed").length === messages.length) {
-            document.getElementById("final").style.display = "block";
+        div.innerText = "Tap me";
+        div.addEventListener("click", () => {
+          if (!div.classList.contains("revealed")) {
+            div.classList.add("revealed");
+            div.innerText = msg;
+            revealed++;
+            if (revealed === messages.length) {
+              document.getElementById("final").style.display = "block";
+              setTimeout(() => {
+                document.getElementById("flowers").style.display = "block";
+              }, 1000);
+            }
           }
-        };
+        });
         container.appendChild(div);
       });
-    }
-    document.getElementById("click-me").onclick = () => {
-      document.getElementById("flowers").style.display = "block";
-      document.getElementById("mini-game").style.display = "block";
-      launchMiniGame();
-    };
-    let score = 0;
-    function launchMiniGame() {
-      const heartEmoji = "💖";
-      const spawnHeart = () => {
+
+      setInterval(() => {
         const heart = document.createElement("div");
         heart.className = "heart";
-        heart.style.left = Math.random() * 90 + "vw";
-        heart.style.top = "100vh";
-        heart.innerText = heartEmoji;
-        heart.style.position = "absolute";
-        heart.style.cursor = "pointer";
-        heart.style.zIndex = 999;
-        heart.onclick = () => {
-          score++;
-          document.getElementById("score-display").innerText = "Score: " + score;
+        heart.style.left = Math.random() * 100 + "vw";
+        heart.style.animationDuration = (6 + Math.random() * 4) + "s";
+        heart.addEventListener("click", () => {
+          tapCount++;
+          document.getElementById("score").innerText = "❤️ Taps: " + tapCount;
           heart.remove();
-          if (score === 10) alert("You're the real heart collector! 💘 I love you even more!");
-        };
+        });
         document.body.appendChild(heart);
-        let moveUp = setInterval(() => {
-          const top = parseFloat(heart.style.top);
-          if (top < -30) {
-            heart.remove();
-            clearInterval(moveUp);
-          } else {
-            heart.style.top = (top - 2) + "px";
-          }
-        }, 30);
-        setTimeout(() => heart.remove(), 7000);
-      };
-      setInterval(spawnHeart, 1200);
+        setTimeout(() => heart.remove(), 10000);
+      }, 600);
     }
   </script>
 </body>
