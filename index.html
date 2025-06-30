@@ -68,6 +68,15 @@
     const background = new Image();
     background.src = "assets/background_color_mushrooms.png";
 
+    let bgScale = 1;
+    let bgReady = false;
+
+    background.onload = () => {
+      const targetHeight = UNIT * 5; // Adjust height to fit nicely
+      bgScale = targetHeight / background.height;
+      bgReady = true;
+    };
+
     function initGame() {
       player = {
         x: UNIT * 2,
@@ -91,18 +100,14 @@
     const JUMP_POWER = -UNIT * 0.6;
 
     function drawBackground() {
-      const patternWidth = background.width;
-      const patternHeight = background.height;
+      if (!bgReady) return;
 
-      if (patternWidth > 0 && patternHeight > 0) {
-        const scale = UNIT * 3 / patternHeight; // scale to fit nice height (3 units tall)
-        const tileWidth = patternWidth * scale;
-        const tileHeight = patternHeight * scale;
-        const yPos = canvas.height - tileHeight;
+      const tileW = background.width * bgScale;
+      const tileH = background.height * bgScale;
+      const y = canvas.height - tileH;
 
-        for (let x = 0; x < canvas.width; x += tileWidth) {
-          ctx.drawImage(background, x, yPos, tileWidth, tileHeight);
-        }
+      for (let x = 0; x < canvas.width; x += tileW) {
+        ctx.drawImage(background, x, y, tileW, tileH);
       }
     }
 
