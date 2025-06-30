@@ -45,6 +45,57 @@
       font-family: 'Quicksand', sans-serif;
       cursor: pointer;
     }
+    #wheel-container {
+      margin-top: 60px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .wheel {
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      border: 10px solid #fff;
+      background: conic-gradient(
+        #ff9ebf 0deg 60deg,
+        #ffc107 60deg 120deg,
+        #17a2b8 120deg 180deg,
+        #28a745 180deg 240deg,
+        #fd7e14 240deg 300deg,
+        #6f42c1 300deg 360deg
+      );
+      position: relative;
+      transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
+    }
+    .pointer {
+      width: 0;
+      height: 0;
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-bottom: 30px solid #fff;
+      margin-bottom: 20px;
+    }
+    #spin-btn {
+      margin-top: 20px;
+      font-size: 1.1rem;
+      padding: 0.8rem 1.6rem;
+      border: none;
+      border-radius: 8px;
+      background: #ff69b4;
+      color: white;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 30px;
+      font-size: 1.3rem;
+      font-weight: bold;
+      background: rgba(255, 255, 255, 0.9);
+      color: #ff1493;
+      padding: 1rem 1.5rem;
+      border-radius: 10px;
+      max-width: 80%;
+    }
   </style>
 </head>
 <body>
@@ -53,9 +104,43 @@
     <button onclick="startApp()">Tap to Begin</button>
   </div>
 
+  <div id="wheel-container">
+    <div class="pointer"></div>
+    <div class="wheel" id="wheel"></div>
+    <button id="spin-btn" onclick="spinWheel()">🎡 Spin</button>
+    <div id="result"></div>
+  </div>
+
   <script>
     function startApp() {
       document.getElementById("start-screen").style.display = "none";
+      document.getElementById("wheel-container").style.display = "flex";
+    }
+
+    const wheel = document.getElementById("wheel");
+    const result = document.getElementById("result");
+
+    const messages = [
+      "💖 You win a kiss!",
+      "💌 Forgive me pretty please?",
+      "🫂 Hug time!",
+      "🌟 You're my favorite person",
+      "😘 I love you soooo much!",
+      "🧸 Cuddle voucher!"
+    ];
+
+    function spinWheel() {
+      const randDegree = Math.floor(3600 + Math.random() * 1000); // Random spin
+      const segment = 360 / messages.length;
+      const selectedIndex = Math.floor(((randDegree % 360) / segment));
+      const finalMessage = messages[messages.length - 1 - selectedIndex];
+
+      wheel.style.transform = `rotate(${randDegree}deg)`;
+
+      result.innerText = "";
+      setTimeout(() => {
+        result.innerText = finalMessage;
+      }, 4200);
     }
   </script>
 </body>
