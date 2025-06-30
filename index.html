@@ -32,13 +32,19 @@
     const GRAVITY = 0.5;
     const JUMP_POWER = -10;
 
-    let playerY = 240;
-    let velocityY = 0;
-    let isJumping = false;
+    const player = {
+      x: 50,
+      y: 240,
+      width: 32,
+      height: 32,
+      velocityY: 0,
+      isOnGround: true
+    };
 
-    let isOnGround = true;
-    let currentFrame = 0;
+    let score = 0;
     let frameCounter = 0;
+
+    const obstacles = [];
 
     // Load images
     const walkA = new Image();
@@ -50,28 +56,8 @@
     const jumpImg = new Image();
     jumpImg.src = "assets/character_pink_jump.png";
 
-    const player = {
-      x: 50,
-      y: playerY,
-      width: 32,
-      height: 32,
-    };
-
-    const obstacles = [];
-    let score = 0;
-
-    function spawnObstacle() {
-      const obstacle = {
-        x: canvas.width,
-        y: 250,
-        width: 20,
-        height: 40,
-      };
-      obstacles.push(obstacle);
-    }
-
     function drawPlayer() {
-      const sprite = isOnGround
+      const sprite = player.isOnGround
         ? (frameCounter % 20 < 10 ? walkA : walkB)
         : jumpImg;
       ctx.drawImage(sprite, player.x, player.y, player.width, player.height);
@@ -79,51 +65,9 @@
 
     function drawObstacles() {
       ctx.fillStyle = "red";
-      obstacles.forEach((obstacle) => {
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+      obstacles.forEach((obs) => {
+        ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
       });
-    }
-
-    function update() {
-      frameCounter++;
-
-      // Gravity
-      velocityY += GRAVITY;
-      player.y += velocityY;
-
-      // Ground check
-      if (player.y >= 240) {
-        player.y = 240;
-        velocityY = 0;
-        isOnGround = true;
-      } else {
-        isOnGround = false;
-      }
-
-      // Move obstacles
-      for (let i = obstacles.length - 1; i >= 0; i--) {
-        obstacles[i].x -= 5;
-        if (obstacles[i].x + obstacles[i].width < 0) {
-          obstacles.splice(i, 1);
-          score++;
-        }
-
-        // Collision
-        if (
-          player.x < obstacles[i].x + obstacles[i].width &&
-          player.x + player.width > obstacles[i].x &&
-          player.y < obstacles[i].y + obstacles[i].height &&
-          player.y + player.height > obstacles[i].y
-        ) {
-          alert("Game Over! Your score: " + score);
-          document.location.reload();
-        }
-      }
-
-      // Add new obstacle randomly
-      if (Math.random() < 0.02) {
-        spawnObstacle();
-      }
     }
 
     function drawScore() {
@@ -132,33 +76,90 @@
       ctx.fillText("Score: " + score, 10, 20);
     }
 
-    function gameLoop() {
+    function spawnObstacle() {
+      obstacles.push({
+        x: canvas.width,
+        y: 250,
+        width: 20,
+        height: 40
+      });
+    }
+
+    function updatePlayer() {
+      player.velocityY += GRAVITY;
+      player.y += player.velocityY;
+
+      if (player.y >= 240) {
+        player.y = 240;
+        player.velocityY = 0;
+        player.isOnGround = true;
+      } else {
+        player.isOnGround = false;
+      }
+    }
+
+    function updateObstacles() {
+      for (let i = obstacles.length - 1; i >= 0; i--) {
+        const obs = obstacles[i];
+        obs.x -= 5;
+
+        // Remove if off screen
+        if (obs.x + obs.width < 0) {
+          obstacles.splice(i, 1);
+          score++;
+          continue;
+        }
+
+        // Collision
+        if (
+          player.x < obs.x + obs.width &&
+          player.x + player.width > obs.x &&
+          player.y < obs.y + obs.height &&
+          player.y + player.height > obs.y
+        ) {
+          alert("Game Over! Score: " + score);
+          document.location.reload();
+        }
+      }
+    }
+
+    function update() {
+      frameCounter++;
+      updatePlayer();
+      updateObstacles();
+
+      if (Math.random() < 0.02) {
+        spawnObstacle();
+      }
+    }
+
+    function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      update();
       drawPlayer();
       drawObstacles();
       drawScore();
+    }
+
+    function gameLoop() {
+      update();
+      draw();
       requestAnimationFrame(gameLoop);
     }
 
     function jump() {
-      if (isOnGround) {
-        velocityY = JUMP_POWER;
-        isOnGround = false;
+      if (player.isOnGround) {
+        player.velocityY = JUMP_POWER;
+        player.isOnGround = false;
       }
     }
 
-    // Input handling
+    // Controls
     document.addEventListener("keydown", (e) => {
-      if (e.code === "Space" || e.code === "ArrowUp") {
-        jump();
-      }
+      if (e.code === "Space" || e.code === "ArrowUp") jump();
     });
-
-    canvas.addEventListener("touchstart", jump);
     canvas.addEventListener("mousedown", jump);
+    canvas.addEventListener("touchstart", jump);
 
-    // Start game
     gameLoop();
   </script>
 </body>
