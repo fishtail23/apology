@@ -2,210 +2,170 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Collect the Roses Game</title>
+  <title>Runner Game</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    html, body {
+    body {
       margin: 0;
-      padding: 0;
+      background: #f0f0f0;
+      font-family: sans-serif;
+      text-align: center;
       overflow: hidden;
-      background: url('https://media.tenor.com/fOP9jA3HaMsAAAAi/hearts-of-happiness-hearts.gif') center/cover no-repeat fixed;
     }
-
     canvas {
       display: block;
-      margin: 40px auto 0;
-      background: #fff0f5;
-      border: 4px solid white;
-      border-radius: 16px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      margin: 0 auto;
+      background: #fff;
+      border-bottom: 4px solid #333;
       touch-action: none;
     }
-
-    h1 {
-      text-align: center;
-      font-family: 'Arial', sans-serif;
-      color: white;
-      text-shadow: 2px 2px 8px #000;
-    }
-
     .controls {
-      position: fixed;
-      bottom: 20px;
-      left: 0;
-      right: 0;
       display: flex;
       justify-content: center;
       gap: 20px;
-      z-index: 999;
+      margin-top: 10px;
     }
-
     .btn {
-      width: 60px;
-      height: 60px;
-      background: rgba(255,255,255,0.8);
-      border: none;
-      border-radius: 50%;
       font-size: 24px;
-      font-weight: bold;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      padding: 10px 20px;
+      border-radius: 12px;
+      border: none;
+      background: #ddd;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
       touch-action: manipulation;
     }
-
     @media (min-width: 800px) {
-      .controls { display: none; }
+      .controls {
+        display: none;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>🌹 Collect the Roses 🌹</h1>
-  <canvas id="game" width="640" height="400"></canvas>
-
-  <!-- Mobile Controls -->
+  <h1>🐱‍🏃 Runner Game</h1>
+  <canvas id="game" width="640" height="300"></canvas>
   <div class="controls">
-    <button class="btn" id="left">←</button>
-    <button class="btn" id="jump">↑</button>
-    <button class="btn" id="right">→</button>
+    <button class="btn" id="jumpBtn">Jump</button>
   </div>
 
   <script>
-    const canvas = document.getElementById("game");
-    const ctx = canvas.getContext("2d");
-
-    const keys = {};
-    document.addEventListener("keydown", e => keys[e.code] = true);
-    document.addEventListener("keyup", e => keys[e.code] = false);
-
-    // Mobile controls
-    const mobileKeys = { left: false, right: false, jump: false };
-    document.getElementById("left").addEventListener("touchstart", () => mobileKeys.left = true);
-    document.getElementById("left").addEventListener("touchend", () => mobileKeys.left = false);
-    document.getElementById("right").addEventListener("touchstart", () => mobileKeys.right = true);
-    document.getElementById("right").addEventListener("touchend", () => mobileKeys.right = false);
-    document.getElementById("jump").addEventListener("touchstart", () => mobileKeys.jump = true);
-    document.getElementById("jump").addEventListener("touchend", () => mobileKeys.jump = false);
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
 
     const player = {
-      x: 50, y: 300,
-      width: 32, height: 32,
-      vx: 0, vy: 0,
-      onGround: false,
-      color: "#333"
+      x: 50,
+      y: 240,
+      width: 30,
+      height: 30,
+      vy: 0,
+      jumpPower: -10,
+      gravity: 0.5,
+      onGround: true,
+      emoji: "🐱"
     };
 
-    const gravity = 0.5;
-    const jumpPower = -10;
-
-    const platforms = [
-      { x: 0, y: 370, width: 640, height: 30 },
-      { x: 100, y: 300, width: 100, height: 10 },
-      { x: 250, y: 250, width: 100, height: 10 },
-      { x: 400, y: 200, width: 100, height: 10 },
-    ];
-
-    const roses = [
-      { x: 120, y: 270, collected: false },
-      { x: 270, y: 220, collected: false },
-      { x: 420, y: 170, collected: false },
-    ];
-
     let score = 0;
+    let obstacles = [];
+    let gameSpeed = 4;
+    let frame = 0;
+    let gameOver = false;
 
     function drawPlayer() {
-      ctx.fillStyle = player.color;
-      ctx.fillRect(player.x, player.y, player.width, player.height);
+      ctx.font = "30px serif";
+      ctx.fillText(player.emoji, player.x, player.y + player.height);
     }
 
-    function drawPlatforms() {
-      ctx.fillStyle = "#fff";
-      platforms.forEach(p => ctx.fillRect(p.x, p.y, p.width, p.height));
+    function drawObstacle(ob) {
+      ctx.fillStyle = "#008000";
+      ctx.fillRect(ob.x, ob.y, ob.width, ob.height);
     }
 
-    function drawRoses() {
-      roses.forEach(rose => {
-        if (!rose.collected) {
-          ctx.beginPath();
-          ctx.arc(rose.x, rose.y, 10, 0, Math.PI * 2);
-          ctx.fillStyle = "red";
-          ctx.fill();
-          ctx.strokeStyle = "#990000";
-          ctx.stroke();
-        }
-      });
+    function drawGround() {
+      ctx.fillStyle = "#ccc";
+      ctx.fillRect(0, 270, canvas.width, 30);
     }
 
-    function showScore() {
-      ctx.fillStyle = "#000";
-      ctx.font = "20px Arial";
-      ctx.fillText("Roses: " + score + " / " + roses.length, 10, 30);
+    function drawScore() {
+      ctx.fillStyle = "#333";
+      ctx.font = "18px Arial";
+      ctx.fillText("Score: " + score, 10, 25);
     }
 
     function update() {
-      player.vx = 0;
+      if (gameOver) return;
 
-      const moveLeft = keys["ArrowLeft"] || mobileKeys.left;
-      const moveRight = keys["ArrowRight"] || mobileKeys.right;
-      const jumpPressed = keys["Space"] || mobileKeys.jump;
+      player.vy += player.gravity;
+      player.y += player.vy;
 
-      if (moveLeft) player.vx = -3;
-      if (moveRight) player.vx = 3;
-      if (jumpPressed && player.onGround) {
-        player.vy = jumpPower;
+      if (player.y >= 240) {
+        player.y = 240;
+        player.vy = 0;
+        player.onGround = true;
+      } else {
         player.onGround = false;
       }
 
-      player.vy += gravity;
-      player.x += player.vx;
-      player.y += player.vy;
+      // Move and remove obstacles
+      obstacles.forEach(ob => ob.x -= gameSpeed);
+      obstacles = obstacles.filter(ob => ob.x + ob.width > 0);
 
-      player.onGround = false;
-      platforms.forEach(p => {
-        if (player.x < p.x + p.width &&
-            player.x + player.width > p.x &&
-            player.y + player.height < p.y + p.height &&
-            player.y + player.height > p.y) {
-          player.y = p.y - player.height;
-          player.vy = 0;
-          player.onGround = true;
+      // Add new obstacles
+      if (frame % 90 === 0) {
+        const height = 30 + Math.random() * 20;
+        obstacles.push({
+          x: canvas.width,
+          y: 270 - height,
+          width: 20,
+          height: height
+        });
+      }
+
+      // Collision check
+      obstacles.forEach(ob => {
+        if (
+          player.x < ob.x + ob.width &&
+          player.x + player.width > ob.x &&
+          player.y + player.height > ob.y
+        ) {
+          gameOver = true;
         }
       });
 
-      roses.forEach(rose => {
-        if (!rose.collected &&
-            player.x < rose.x + 10 &&
-            player.x + player.width > rose.x - 10 &&
-            player.y < rose.y + 10 &&
-            player.y + player.height > rose.y - 10) {
-          rose.collected = true;
-          score++;
-        }
-      });
+      // Score
+      score += 1;
+      frame++;
+    }
 
-      if (player.y > canvas.height) {
-        // Reset game
-        player.x = 50;
-        player.y = 300;
-        score = 0;
-        roses.forEach(r => r.collected = false);
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawGround();
+      drawPlayer();
+      obstacles.forEach(drawObstacle);
+      drawScore();
+
+      if (gameOver) {
+        ctx.fillStyle = "red";
+        ctx.font = "32px Arial";
+        ctx.fillText("Game Over 💔", canvas.width/2 - 100, 150);
       }
     }
 
     function loop() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
       update();
-      drawPlatforms();
-      drawRoses();
-      drawPlayer();
-      showScore();
-
-      if (score === roses.length) {
-        ctx.fillStyle = "#000";
-        ctx.font = "26px Arial";
-        ctx.fillText("You got them all! 💘", 200, 100);
-      }
-
+      draw();
       requestAnimationFrame(loop);
     }
+
+    // Controls
+    document.addEventListener("keydown", e => {
+      if ((e.code === "Space" || e.code === "ArrowUp") && player.onGround) {
+        player.vy = player.jumpPower;
+      }
+    });
+
+    document.getElementById("jumpBtn").addEventListener("touchstart", () => {
+      if (player.onGround) player.vy = player.jumpPower;
+    });
 
     loop();
   </script>
