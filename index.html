@@ -8,6 +8,7 @@
     * {
       box-sizing: border-box;
     }
+
     body {
       margin: 0;
       padding: 0;
@@ -21,21 +22,24 @@
       height: 100vh;
       overflow: hidden;
     }
+
     .container {
       position: relative;
-      width: 300px;
-      height: 300px;
-      margin-bottom: 30px;
+      width: 320px;
+      height: 320px;
+      margin-bottom: 40px;
     }
+
     .wheel {
       width: 100%;
       height: 100%;
       border-radius: 50%;
       border: 6px solid #fff;
       position: relative;
-      transition: transform 2s ease-out;
+      transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
       overflow: hidden;
     }
+
     .slice {
       position: absolute;
       width: 50%;
@@ -43,14 +47,15 @@
       top: 50%;
       left: 50%;
       transform-origin: 0% 0%;
-      background: pink;
       clip-path: polygon(0 0, 100% 0, 0 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: white;
+      font-size: 24px;
       font-weight: bold;
+      color: white;
     }
+
     .slice:nth-child(1) { transform: rotate(0deg); background: #ff4d6d; }
     .slice:nth-child(2) { transform: rotate(60deg); background: #ff85a1; }
     .slice:nth-child(3) { transform: rotate(120deg); background: #ffb3c6; }
@@ -63,13 +68,12 @@
       top: -20px;
       left: 50%;
       transform: translateX(-50%);
-      width: 24px;
-      height: 36px;
-      background: white;
-      border-radius: 50% 50% 0 0;
-      transform: translateX(-50%) rotate(180deg);
+      width: 0;
+      height: 0;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-bottom: 24px solid white;
       z-index: 10;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
 
     .pegs {
@@ -78,19 +82,18 @@
       left: 0;
       width: 100%;
       height: 100%;
-      border-radius: 50%;
       pointer-events: none;
     }
 
     .peg {
       position: absolute;
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       background: yellow;
       border-radius: 50%;
-      top: -4px;
+      top: -5px;
       left: 50%;
-      transform-origin: center 150px;
+      transform-origin: center 160px;
     }
 
     .btn {
@@ -102,6 +105,7 @@
       border-radius: 10px;
       cursor: pointer;
       font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
   </style>
 </head>
@@ -126,8 +130,10 @@
     const wheel = document.getElementById("wheel");
     const pegs = document.getElementById("pegs");
 
-    // Add pegs dynamically (6 slices = 6 pegs)
     const totalSlices = 6;
+    let currentRotation = 0;
+
+    // Add pegs
     for (let i = 0; i < totalSlices; i++) {
       const peg = document.createElement("div");
       peg.classList.add("peg");
@@ -135,10 +141,8 @@
       pegs.appendChild(peg);
     }
 
-    let currentRotation = 0;
-
     function spinWheel() {
-      const extraSpins = 5; // how many full spins
+      const extraSpins = 5; // Number of full rotations
       const sliceAngle = 360 / totalSlices;
       const randomSlice = Math.floor(Math.random() * totalSlices);
       const degrees = randomSlice * sliceAngle;
