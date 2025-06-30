@@ -2,149 +2,152 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>I Suck (But I Love You)</title>
+  <title>Prize Wheel of Love</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
       padding: 0;
-      font-family: 'Quicksand', sans-serif;
+      font-family: 'Arial', sans-serif;
       background: url('https://media.tenor.com/fOP9jA3HaMsAAAAi/hearts-of-happiness-hearts.gif') no-repeat center center fixed;
       background-size: cover;
-      color: #fff;
-      text-align: center;
-      overflow-x: hidden;
-    }
-    h1 {
-      font-family: 'Pacifico', cursive;
-      font-size: 2.2rem;
-      color: #ffffff;
-      margin-top: 2rem;
-      text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
-    }
-    #start-screen {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.85);
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-    #start-screen button {
-      font-size: 1.2rem;
-      padding: 1rem 2rem;
-      border: none;
-      border-radius: 10px;
-      background: #ff69b4;
-      color: white;
-      font-family: 'Quicksand', sans-serif;
-      cursor: pointer;
-    }
-    #wheel-container {
-      margin-top: 60px;
-      display: none;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
+      height: 100vh;
+      overflow: hidden;
     }
-    .wheel {
+    .container {
+      position: relative;
       width: 300px;
       height: 300px;
-      border-radius: 50%;
-      border: 10px solid #fff;
-      background: conic-gradient(
-        #ff9ebf 0deg 60deg,
-        #ffc107 60deg 120deg,
-        #17a2b8 120deg 180deg,
-        #28a745 180deg 240deg,
-        #fd7e14 240deg 300deg,
-        #6f42c1 300deg 360deg
-      );
-      position: relative;
-      transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
+      margin-bottom: 30px;
     }
+    .wheel {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 6px solid #fff;
+      position: relative;
+      transition: transform 2s ease-out;
+      overflow: hidden;
+    }
+    .slice {
+      position: absolute;
+      width: 50%;
+      height: 50%;
+      top: 50%;
+      left: 50%;
+      transform-origin: 0% 0%;
+      background: pink;
+      clip-path: polygon(0 0, 100% 0, 0 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+    .slice:nth-child(1) { transform: rotate(0deg); background: #ff4d6d; }
+    .slice:nth-child(2) { transform: rotate(60deg); background: #ff85a1; }
+    .slice:nth-child(3) { transform: rotate(120deg); background: #ffb3c6; }
+    .slice:nth-child(4) { transform: rotate(180deg); background: #ffc6e2; }
+    .slice:nth-child(5) { transform: rotate(240deg); background: #ff85a1; }
+    .slice:nth-child(6) { transform: rotate(300deg); background: #ff4d6d; }
+
     .pointer {
-  position: relative;
-  top: 20px; /* pushes it into the wheel */
-  z-index: 10;
-  width: 0;
-  height: 0;
-  border-left: 20px solid transparent;
-  border-right: 20px solid transparent;
-  border-top: 30px solid white;
-  transform: rotate(180deg); /* arrow now points downward into the wheel */
-}
-    #spin-btn {
-      margin-top: 20px;
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24px;
+      height: 36px;
+      background: white;
+      border-radius: 50% 50% 0 0;
+      transform: translateX(-50%) rotate(180deg);
+      z-index: 10;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    .pegs {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .peg {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: yellow;
+      border-radius: 50%;
+      top: -4px;
+      left: 50%;
+      transform-origin: center 150px;
+    }
+
+    .btn {
+      padding: 12px 24px;
       font-size: 1.1rem;
-      padding: 0.8rem 1.6rem;
-      border: none;
-      border-radius: 8px;
       background: #ff69b4;
       color: white;
-      cursor: pointer;
-    }
-    #result {
-      margin-top: 30px;
-      font-size: 1.3rem;
-      font-weight: bold;
-      background: rgba(255, 255, 255, 0.9);
-      color: #ff1493;
-      padding: 1rem 1.5rem;
+      border: none;
       border-radius: 10px;
-      max-width: 80%;
+      cursor: pointer;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <div id="start-screen">
-    <h1>I Suck (But I Love You)</h1>
-    <button onclick="startApp()">Tap to Begin</button>
+
+  <div class="container">
+    <div class="pointer"></div>
+    <div class="wheel" id="wheel">
+      <div class="slice">💕</div>
+      <div class="slice">😘</div>
+      <div class="slice">🥰</div>
+      <div class="slice">💖</div>
+      <div class="slice">🌹</div>
+      <div class="slice">💌</div>
+    </div>
+    <div class="pegs" id="pegs"></div>
   </div>
 
-  <div id="wheel-container">
-    <div class="pointer"></div>
-    <div class="wheel" id="wheel"></div>
-    <button id="spin-btn" onclick="spinWheel()">🎡 Spin</button>
-    <div id="result"></div>
-  </div>
+  <button class="btn" onclick="spinWheel()">Spin the Wheel</button>
 
   <script>
-    function startApp() {
-      document.getElementById("start-screen").style.display = "none";
-      document.getElementById("wheel-container").style.display = "flex";
+    const wheel = document.getElementById("wheel");
+    const pegs = document.getElementById("pegs");
+
+    // Add pegs dynamically (6 slices = 6 pegs)
+    const totalSlices = 6;
+    for (let i = 0; i < totalSlices; i++) {
+      const peg = document.createElement("div");
+      peg.classList.add("peg");
+      peg.style.transform = `rotate(${i * (360 / totalSlices)}deg) translateX(-50%)`;
+      pegs.appendChild(peg);
     }
 
-    const wheel = document.getElementById("wheel");
-    const result = document.getElementById("result");
-
-    const messages = [
-      "💖 You win a kiss!",
-      "💌 Forgive me pretty please?",
-      "🫂 Hug time!",
-      "🌟 You're my favorite person",
-      "😘 I love you soooo much!",
-      "🧸 Cuddle voucher!"
-    ];
+    let currentRotation = 0;
 
     function spinWheel() {
-      const randDegree = Math.floor(3600 + Math.random() * 1000); // Random spin
-      const segment = 360 / messages.length;
-      const selectedIndex = Math.floor(((randDegree % 360) / segment));
-      const finalMessage = messages[messages.length - 1 - selectedIndex];
+      const extraSpins = 5; // how many full spins
+      const sliceAngle = 360 / totalSlices;
+      const randomSlice = Math.floor(Math.random() * totalSlices);
+      const degrees = randomSlice * sliceAngle;
+      const totalDegrees = 360 * extraSpins + degrees;
 
-      wheel.style.transform = `rotate(${randDegree}deg)`;
-
-      result.innerText = "";
-      setTimeout(() => {
-        result.innerText = finalMessage;
-      }, 4200);
+      currentRotation += totalDegrees;
+      wheel.style.transform = `rotate(${currentRotation}deg)`;
     }
   </script>
+
 </body>
 </html>
