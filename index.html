@@ -2,220 +2,174 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Run for Love</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Run Game</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html, body {
-      width: 100%;
-      height: 100%;
+    body {
+      font-family: sans-serif;
+      background-color: #fff0f5;
       overflow: hidden;
-      font-family: 'Comic Sans MS', sans-serif;
       touch-action: manipulation;
-      background: linear-gradient(to top, #ffd6e0, #ffe9f0);
     }
 
-    canvas {
-      display: block;
-      margin: auto;
-      background: transparent;
+    #game {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+      background-color: #fff0f5;
+    }
+
+    #player {
+      position: absolute;
+      bottom: 20px;
+      left: 50px;
+      font-size: 3rem;
+      transition: bottom 0.1s;
+    }
+
+    .obstacle {
+      position: absolute;
+      bottom: 20px;
+      right: 0;
+      font-size: 2.5rem;
     }
 
     #score {
       position: absolute;
       top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 1.5rem;
-      color: #fff;
-      background: #ff69b4;
-      padding: 8px 16px;
-      border-radius: 30px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      left: 10px;
+      font-size: 1.2rem;
+      background: #fff;
+      padding: 5px 10px;
+      border-radius: 8px;
     }
 
-    #game-over {
+    #gameOver {
       position: absolute;
       top: 40%;
       left: 50%;
       transform: translate(-50%, -50%);
       font-size: 2rem;
-      background: #fff;
-      color: #ff3366;
-      padding: 1rem 2rem;
-      border-radius: 15px;
+      color: red;
       display: none;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      text-align: center;
     }
   </style>
 </head>
 <body>
-  <div id="score">Score: 0</div>
-  <div id="game-over">Game Over 💔<br><small>Tap to try again</small></div>
-  <canvas id="gameCanvas" width="360" height="600"></canvas>
+  <div id="game">
+    <div id="player">🏃‍♀️</div>
+    <div id="score">Score: 0</div>
+    <div id="gameOver">Game Over</div>
+  </div>
 
   <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
+    const game = document.getElementById("game");
+    const player = document.getElementById("player");
+    const scoreDisplay = document.getElementById("score");
+    const gameOverDisplay = document.getElementById("gameOver");
 
-    const groundHeight = 30;
-    const emojiSize = 36;
-
-    const player = {
-      x: 50,
-      y: 0,
-      width: emojiSize,
-      height: emojiSize,
-      dy: 0,
-      gravity: 0.6,
-      jumpForce: -10,
-      grounded: false
-    };
-
-    let roses = [];
-    let clouds = [
-      { x: 0, y: 50, speed: 0.3 },
-      { x: 150, y: 80, speed: 0.2 },
-      { x: 300, y: 40, speed: 0.4 }
-    ];
+    let jumping = false;
     let score = 0;
-    let gameOver = false;
-    let roseTimer = 0;
-    let roseInterval = 80;
+    let gameRunning = true;
 
-    function resetGame() {
-      player.y = canvas.height - player.height - groundHeight;
-      player.dy = 0;
-      player.grounded = true;
-      roses = [];
-      score = 0;
-      gameOver = false;
-      roseTimer = 0;
-      document.getElementById("game-over").style.display = "none";
-      document.getElementById("score").innerText = "Score: 0";
-    }
-
-    function drawBackground() {
-      // Sun
-      ctx.beginPath();
-      ctx.arc(300, 80, 40, 0, Math.PI * 2);
-      ctx.fillStyle = "#ffe066";
-      ctx.fill();
-
-      // Clouds
-      clouds.forEach(cloud => {
-        ctx.font = "30px serif";
-        ctx.fillText("☁️", cloud.x, cloud.y);
-        cloud.x -= cloud.speed;
-        if (cloud.x < -50) cloud.x = canvas.width + Math.random() * 100;
-      });
-
-      // Ground (no flowers now)
-      ctx.fillStyle = "#ffccd5";
-      ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight);
-    }
-
-    function drawPlayer() {
-      ctx.save();
-      ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
-      ctx.scale(-1, 1);
-      ctx.font = `${emojiSize}px serif`;
-      ctx.fillText("🏃‍♀️", -player.width / 2, player.height / 2);
-      ctx.restore();
-    }
-
-    function drawRoses() {
-      ctx.font = `${emojiSize}px serif`;
-      roses.forEach(rose => {
-        ctx.fillText("🌹", rose.x, rose.y + emojiSize);
-      });
-    }
-
-    function updateRoses() {
-      for (let i = roses.length - 1; i >= 0; i--) {
-        roses[i].x -= 5;
-        if (roses[i].x + emojiSize < 0) {
-          roses.splice(i, 1);
-          score++;
-          document.getElementById("score").innerText = "Score: " + score;
-        } else if (
-          roses[i].x < player.x + player.width &&
-          roses[i].x + emojiSize > player.x &&
-          roses[i].y < player.y + player.height &&
-          roses[i].y + emojiSize > player.y
-        ) {
-          gameOver = true;
-          document.getElementById("game-over").style.display = "block";
-        }
+    // 🏃‍♀️ Animation frames
+    const frames = ["🏃‍♀️", "🏃‍♀️‍➡️"];
+    let currentFrame = 0;
+    setInterval(() => {
+      if (gameRunning) {
+        player.innerText = frames[currentFrame];
+        currentFrame = (currentFrame + 1) % frames.length;
       }
-    }
+    }, 200); // Adjust speed of animation here
 
     function jump() {
-      if (player.grounded && !gameOver) {
-        player.dy = player.jumpForce;
-        player.grounded = false;
-      }
+      if (jumping || !gameRunning) return;
+      jumping = true;
+      let jumpHeight = 0;
+      const up = setInterval(() => {
+        if (jumpHeight >= 100) {
+          clearInterval(up);
+          const down = setInterval(() => {
+            if (jumpHeight <= 0) {
+              clearInterval(down);
+              jumping = false;
+            } else {
+              jumpHeight -= 5;
+              player.style.bottom = 20 + jumpHeight + "px";
+            }
+          }, 20);
+        } else {
+          jumpHeight += 5;
+          player.style.bottom = 20 + jumpHeight + "px";
+        }
+      }, 20);
     }
 
-    function update() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawBackground();
+    function createObstacle() {
+      const obstacle = document.createElement("div");
+      obstacle.className = "obstacle";
+      obstacle.innerText = "🌹";
+      obstacle.style.right = "-50px";
+      game.appendChild(obstacle);
 
-      if (!gameOver) {
-        player.dy += player.gravity;
-        player.y += player.dy;
-
-        if (player.y + player.height >= canvas.height - groundHeight) {
-          player.y = canvas.height - player.height - groundHeight;
-          player.dy = 0;
-          player.grounded = true;
+      let position = -50;
+      const move = setInterval(() => {
+        if (!gameRunning) {
+          clearInterval(move);
+          obstacle.remove();
+          return;
         }
 
-        roseTimer++;
-        if (roseTimer >= roseInterval) {
-          roseTimer = 0;
-          roses.push({
-            x: canvas.width,
-            y: canvas.height - groundHeight - emojiSize
-          });
-          roseInterval = 80 + Math.floor(Math.random() * 50);
+        position += 5;
+        obstacle.style.right = position + "px";
+
+        const obstacleLeft = game.offsetWidth - position - 20;
+        const playerLeft = player.offsetLeft;
+        const playerBottom = parseInt(window.getComputedStyle(player).bottom);
+
+        if (
+          obstacleLeft < playerLeft + 40 &&
+          obstacleLeft + 40 > playerLeft &&
+          playerBottom < 60
+        ) {
+          gameOver();
+          clearInterval(move);
+          obstacle.remove();
         }
 
-        updateRoses();
-        drawRoses();
-        drawPlayer();
-      } else {
-        drawRoses();
-        drawPlayer();
-      }
+        if (obstacleLeft + 40 < playerLeft) {
+          score++;
+          scoreDisplay.innerText = "Score: " + score;
+        }
 
-      requestAnimationFrame(update);
+        if (position > game.offsetWidth + 50) {
+          clearInterval(move);
+          obstacle.remove();
+        }
+      }, 20);
     }
 
-    window.addEventListener("touchstart", () => {
-      if (gameOver) {
-        resetGame();
-      } else {
-        jump();
-      }
-    });
+    function gameOver() {
+      gameRunning = false;
+      gameOverDisplay.style.display = "block";
+    }
 
-    window.addEventListener("mousedown", () => {
-      if (gameOver) {
-        resetGame();
-      } else {
-        jump();
-      }
-    });
+    // Spawn obstacles every 2 to 3 seconds
+    function spawnObstacles() {
+      if (!gameRunning) return;
+      createObstacle();
+      setTimeout(spawnObstacles, Math.random() * 1500 + 1500);
+    }
 
-    resetGame();
-    update();
+    // Handle jumps by tap or click anywhere
+    document.body.addEventListener("click", jump);
+    document.body.addEventListener("touchstart", jump);
+
+    // Start the game
+    spawnObstacles();
   </script>
 </body>
 </html>
