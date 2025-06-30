@@ -91,7 +91,19 @@
     const JUMP_POWER = -UNIT * 0.6;
 
     function drawBackground() {
-      ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+      const patternWidth = background.width;
+      const patternHeight = background.height;
+
+      if (patternWidth > 0 && patternHeight > 0) {
+        const scale = UNIT * 3 / patternHeight; // scale to fit nice height (3 units tall)
+        const tileWidth = patternWidth * scale;
+        const tileHeight = patternHeight * scale;
+        const yPos = canvas.height - tileHeight;
+
+        for (let x = 0; x < canvas.width; x += tileWidth) {
+          ctx.drawImage(background, x, yPos, tileWidth, tileHeight);
+        }
+      }
     }
 
     function drawPlayer() {
@@ -174,6 +186,7 @@
     }
 
     function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawBackground();
       drawPlayer();
       drawObstacles();
