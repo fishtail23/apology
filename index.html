@@ -4,7 +4,124 @@
   <meta charset="UTF-8" />
   <title>Running Game</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
+  <style><script>
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d");
+
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  let gravity = 0.5;
+  let isJumping = false;
+  let score = 0;
+  let gameOver = false;
+
+  const walkA = new Image();
+  walkA.src = "assets/character_pink_walk_a.png";
+
+  const walkB = new Image();
+  walkB.src = "assets/character_pink_walk_b.png";
+
+  const jumpImg = new Image();
+  jumpImg.src = "assets/character_pink_jump.png";
+
+  let currentSprite = walkA;
+
+  const player = {
+    x: 50,
+    y: canvas.height - 100,
+    width: 50,
+    height: 50,
+    vy: 0,
+    onGround: true
+  };
+
+  const obstacles = [];
+
+  function drawPlayer() {
+    ctx.drawImage(currentSprite, player.x, player.y, player.width, player.height);
+  }
+
+  function createObstacle() {
+    const size = 40;
+    obstacles.push({
+      x: canvas.width,
+      y: canvas.height - size,
+      width: size,
+      height: size,
+    });
+  }
+
+  function drawObstacles() {
+    ctx.fillStyle = "#ff4d4d";
+    for (let obs of obstacles) {
+      ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+    }
+  }
+
+  function update() {
+    if (gameOver) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    currentSprite = isJumping ? jumpImg : (Math.floor(Date.now() / 100) % 2 === 0 ? walkA : walkB);
+
+    drawPlayer();
+    drawObstacles();
+
+    player.y += player.vy;
+    player.vy += gravity;
+
+    if (player.y + player.height >= canvas.height) {
+      player.y = canvas.height - player.height;
+      player.vy = 0;
+      player.onGround = true;
+      isJumping = false;
+    }
+
+    for (let obs of obstacles) {
+      obs.x -= 6;
+
+      // collision
+      if (
+        player.x < obs.x + obs.width &&
+        player.x + player.width > obs.x &&
+        player.y < obs.y + obs.height &&
+        player.y + player.height > obs.y
+      ) {
+        gameOver = true;
+      }
+    }
+
+    score++;
+    ctx.fillStyle = "black";
+    ctx.font = "20px sans-serif";
+    ctx.fillText("Score: " + score, 20, 40);
+
+    requestAnimationFrame(update);
+  }
+
+  setInterval(() => {
+    if (!gameOver) createObstacle();
+  }, 1400);
+
+  update();
+
+  function jump() {
+    if (player.onGround) {
+      player.vy = -12;
+      player.onGround = false;
+      isJumping = true;
+    }
+  }
+
+  document.addEventListener("keydown", e => {
+    if (e.code === "Space") jump();
+  });
+
+  document.addEventListener("touchstart", jump);
+</script>
+
     * {
       box-sizing: border-box;
       margin: 0;
