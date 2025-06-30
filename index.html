@@ -31,7 +31,6 @@
       border: none;
       border-radius: 10px;
       display: none;
-      z-index: 1;
     }
   </style>
 </head>
@@ -53,54 +52,30 @@
 
     const UNIT = canvas.height / 15;
 
-    // Load Images
-    const walkA = new Image();
-    walkA.src = "assets/character_pink_walk_a.png";
-
-    const walkB = new Image();
-    walkB.src = "assets/character_pink_walk_b.png";
-
-    const jumpImg = new Image();
-    jumpImg.src = "assets/character_pink_jump.png";
-
-    const bgImage = new Image();
-    bgImage.src = "assets/background_color_mushrooms.png";
-
-    const tileImg = new Image();
-    tileImg.src = "assets/terrain_dirt_block_top.png";
+    const walkA = new Image(); walkA.src = "assets/character_pink_walk_a.png";
+    const walkB = new Image(); walkB.src = "assets/character_pink_walk_b.png";
+    const jumpImg = new Image(); jumpImg.src = "assets/character_pink_jump.png";
+    const bgImage = new Image(); bgImage.src = "assets/background_color_mushrooms.png";
+    const floorTile = new Image(); floorTile.src = "assets/terrain_dirt_block_top.png";
+    const sun = new Image(); sun.src = "assets/hud_player_helmet_yellow.png";
 
     const obstacleImages = [
-      "assets/fence.png",
-      "assets/fence_broken.png",
-      "assets/ladder_middle.png"
-    ].map(src => {
-      const img = new Image();
-      img.src = src;
-      return img;
-    });
+      new Image(), new Image(), new Image()
+    ];
+    obstacleImages[0].src = "assets/fence.png";
+    obstacleImages[1].src = "assets/fence_broken.png";
+    obstacleImages[2].src = "assets/ladder_middle.png";
 
-    const cloudImages = ["assets/cloud1.png", "assets/cloud2.png"].map(src => {
-      const img = new Image();
-      img.src = src;
-      return img;
-    });
-
-    const sunImg = new Image();
-    sunImg.src = "assets/sun.png";
-
-    // Game Variables
     let player, obstacles, score, gameRunning, frameCounter;
     let obstacleTimer = 0;
     let nextObstacleIn = 100;
-    let clouds = [];
-
     const GRAVITY = UNIT * 0.2;
     const JUMP_POWER = -UNIT * 0.28;
 
     function initGame() {
       player = {
         x: UNIT * 2,
-        y: canvas.height - UNIT * 2,
+        y: canvas.height - UNIT * 3,
         width: UNIT * 1.2,
         height: UNIT * 1.2,
         velocityY: 0,
@@ -114,45 +89,36 @@
       obstacleTimer = 0;
       nextObstacleIn = 100;
       restartBtn.style.display = "none";
-
-      clouds = Array.from({ length: 5 }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * UNIT * 4,
-        speed: UNIT * 0.01 + Math.random() * UNIT * 0.01,
-        image: cloudImages[Math.floor(Math.random() * cloudImages.length)],
-        width: UNIT * 5,
-        height: UNIT * 2.5
-      }));
     }
 
     function drawBackground() {
       ctx.fillStyle = "#ffe4f2";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // background image bottom aligned
       const imgHeight = (bgImage.height / bgImage.width) * canvas.width;
       const y = canvas.height - imgHeight;
       ctx.drawImage(bgImage, 0, y, canvas.width, imgHeight);
 
-      // sun
-      const sunSize = UNIT * 3;
-      ctx.drawImage(sunImg, canvas.width - sunSize - UNIT, UNIT, sunSize, sunSize);
+      // Sun
+      ctx.drawImage(sun, canvas.width - UNIT * 3, UNIT, UNIT * 2, UNIT * 2);
 
-      // clouds
-      clouds.forEach(cloud => {
-        ctx.drawImage(cloud.image, cloud.x, cloud.y, cloud.width, cloud.height);
-        cloud.x -= cloud.speed;
-        if (cloud.x + cloud.width < 0) {
-          cloud.x = canvas.width + Math.random() * UNIT * 2;
-          cloud.y = Math.random() * UNIT * 4;
-        }
-      });
+      // Clouds (drawn)
+      ctx.fillStyle = "rgba(255,255,255,0.8)";
+      for (let i = 0; i < 3; i++) {
+        const cx = (i * 200 + frameCounter * 0.2) % canvas.width;
+        const cy = UNIT * (i + 1);
+        ctx.beginPath();
+        ctx.arc(cx, cy, UNIT * 1.2, 0, Math.PI * 2);
+        ctx.arc(cx + 30, cy + 10, UNIT, 0, Math.PI * 2);
+        ctx.arc(cx - 30, cy + 10, UNIT * 0.9, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
 
     function drawFloor() {
-      const tilesX = Math.ceil(canvas.width / UNIT);
-      for (let i = 0; i <= tilesX; i++) {
-        ctx.drawImage(tileImg, i * UNIT, canvas.height - UNIT, UNIT, UNIT);
+      const tiles = Math.ceil(canvas.width / UNIT);
+      for (let i = 0; i < tiles; i++) {
+        ctx.drawImage(floorTile, i * UNIT, canvas.height - UNIT, UNIT, UNIT);
       }
     }
 
@@ -175,14 +141,12 @@
 
     function spawnObstacle() {
       const img = obstacleImages[Math.floor(Math.random() * obstacleImages.length)];
-      const width = UNIT * 1;
-      const height = UNIT * 1.2;
-
+      const size = UNIT * 1;
       obstacles.push({
         x: canvas.width,
-        y: canvas.height - UNIT - height,
-        width,
-        height,
+        y: canvas.height - UNIT - size,
+        width: size,
+        height: size,
         image: img
       });
     }
@@ -191,8 +155,9 @@
       player.velocityY += GRAVITY;
       player.y += player.velocityY;
 
-      if (player.y + player.height >= canvas.height - UNIT) {
-        player.y = canvas.height - UNIT - player.height;
+      const floorY = canvas.height - UNIT - player.height;
+      if (player.y >= floorY) {
+        player.y = floorY;
         player.velocityY = 0;
         player.isOnGround = true;
       } else {
@@ -211,13 +176,11 @@
           continue;
         }
 
-        const buffer = UNIT * 0.2;
-
         if (
-          player.x < obs.x + obs.width - buffer &&
-          player.x + player.width > obs.x + buffer &&
-          player.y < obs.y + obs.height - buffer &&
-          player.y + player.height > obs.y + buffer
+          player.x < obs.x + obs.width &&
+          player.x + player.width > obs.x &&
+          player.y < obs.y + obs.height &&
+          player.y + player.height > obs.y
         ) {
           gameRunning = false;
           restartBtn.style.display = "block";
@@ -227,7 +190,6 @@
 
     function update() {
       if (!gameRunning) return;
-
       frameCounter++;
       updatePlayer();
       updateObstacles();
@@ -275,10 +237,12 @@
       initGame();
     });
 
-    // Wait for all images to load before starting
-    const allImages = [walkA, walkB, jumpImg, bgImage, tileImg, sunImg, ...obstacleImages, ...cloudImages];
-    let loadedCount = 0;
+    const allImages = [
+      walkA, walkB, jumpImg, bgImage, floorTile, sun,
+      ...obstacleImages
+    ];
 
+    let loadedCount = 0;
     allImages.forEach(img => {
       img.onload = () => {
         loadedCount++;
@@ -286,6 +250,9 @@
           initGame();
           gameLoop();
         }
+      };
+      img.onerror = () => {
+        console.error("Failed to load", img.src);
       };
     });
   </script>
