@@ -2,39 +2,45 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Run Game</title>
+  <title>Running Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
-      font-family: sans-serif;
-      background-color: #fff0f5;
+      background: #f8f8f8;
       overflow: hidden;
-      touch-action: manipulation;
+      font-family: sans-serif;
     }
 
     #game {
+      position: relative;
       width: 100vw;
       height: 100vh;
-      position: relative;
+      background: linear-gradient(to top, #aad, #eef);
       overflow: hidden;
-      background-color: #fff0f5;
     }
 
-    #player {
+    #character {
       position: absolute;
-      bottom: 20px;
+      bottom: 10px;
       left: 50px;
-      font-size: 3rem;
-      transition: bottom 0.1s;
+      width: 60px;
+      height: 60px;
+      background-size: cover;
     }
 
     .obstacle {
       position: absolute;
-      bottom: 20px;
-      right: 0;
-      font-size: 2.5rem;
+      bottom: 10px;
+      width: 40px;
+      height: 40px;
+      background: red;
+      border-radius: 10px;
     }
 
     #score {
@@ -42,134 +48,118 @@
       top: 10px;
       left: 10px;
       font-size: 1.2rem;
-      background: #fff;
-      padding: 5px 10px;
-      border-radius: 8px;
+      color: #333;
+      background: white;
+      padding: 4px 8px;
+      border-radius: 6px;
     }
 
     #gameOver {
       position: absolute;
-      top: 40%;
+      top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       font-size: 2rem;
-      color: red;
+      color: #d00;
       display: none;
     }
   </style>
 </head>
 <body>
   <div id="game">
-    <div id="player">🏃‍♀️</div>
+    <div id="character"></div>
     <div id="score">Score: 0</div>
     <div id="gameOver">Game Over</div>
   </div>
 
   <script>
-    const game = document.getElementById("game");
-    const player = document.getElementById("player");
-    const scoreDisplay = document.getElementById("score");
-    const gameOverDisplay = document.getElementById("gameOver");
+    const game = document.getElementById('game');
+    const character = document.getElementById('character');
+    const scoreEl = document.getElementById('score');
+    const gameOverEl = document.getElementById('gameOver');
 
-    let jumping = false;
+    const walkA = 'character_pink_walk_a.png';
+    const walkB = 'character_pink_walk_b.png';
+    const jumpImg = 'character_pink_jump.png';
+
     let score = 0;
-    let gameRunning = true;
+    let jumping = false;
+    let jumpVelocity = 0;
+    let gravity = 0.8;
+    let charY = 0;
+    let groundY = 10;
 
-    // 🏃‍♀️ Animation frames
-    const frames = ["🏃‍♀️", "🏃‍♀️‍➡️"];
-    let currentFrame = 0;
+    let walkFrame = true;
     setInterval(() => {
-      if (gameRunning) {
-        player.innerText = frames[currentFrame];
-        currentFrame = (currentFrame + 1) % frames.length;
+      if (!jumping) {
+        character.style.backgroundImage = `url(${walkFrame ? walkA : walkB})`;
+        walkFrame = !walkFrame;
       }
-    }, 200); // Adjust speed of animation here
+    }, 200);
 
     function jump() {
-      if (jumping || !gameRunning) return;
-      jumping = true;
-      let jumpHeight = 0;
-      const up = setInterval(() => {
-        if (jumpHeight >= 100) {
-          clearInterval(up);
-          const down = setInterval(() => {
-            if (jumpHeight <= 0) {
-              clearInterval(down);
-              jumping = false;
-            } else {
-              jumpHeight -= 5;
-              player.style.bottom = 20 + jumpHeight + "px";
-            }
-          }, 20);
-        } else {
-          jumpHeight += 5;
-          player.style.bottom = 20 + jumpHeight + "px";
-        }
-      }, 20);
+      if (!jumping) {
+        jumping = true;
+        jumpVelocity = 12;
+        character.style.backgroundImage = `url(${jumpImg})`;
+      }
     }
 
-    function createObstacle() {
-      const obstacle = document.createElement("div");
-      obstacle.className = "obstacle";
-      obstacle.innerText = "🌹";
-      obstacle.style.right = "-50px";
-      game.appendChild(obstacle);
-
-      let position = -50;
-      const move = setInterval(() => {
-        if (!gameRunning) {
-          clearInterval(move);
-          obstacle.remove();
-          return;
+    function updateGame() {
+      // Jump physics
+      if (jumping) {
+        charY += jumpVelocity;
+        jumpVelocity -= gravity;
+        if (charY <= 0) {
+          charY = 0;
+          jumping = false;
         }
+        character.style.bottom = `${groundY + charY}px`;
+      }
 
-        position += 5;
-        obstacle.style.right = position + "px";
+      // Move obstacles
+      document.querySelectorAll('.obstacle').forEach(ob => {
+        let left = parseFloat(ob.style.left);
+        ob.style.left = `${left - 5}px`;
 
-        const obstacleLeft = game.offsetWidth - position - 20;
-        const playerLeft = player.offsetLeft;
-        const playerBottom = parseInt(window.getComputedStyle(player).bottom);
-
+        // Collision
         if (
-          obstacleLeft < playerLeft + 40 &&
-          obstacleLeft + 40 > playerLeft &&
-          playerBottom < 60
+          left < 110 &&
+          left > 40 &&
+          !jumping &&
+          parseFloat(ob.style.bottom) < 70
         ) {
-          gameOver();
-          clearInterval(move);
-          obstacle.remove();
+          gameOverEl.style.display = 'block';
+          clearInterval(gameLoop);
+          clearInterval(obstacleInterval);
         }
 
-        if (obstacleLeft + 40 < playerLeft) {
-          score++;
-          scoreDisplay.innerText = "Score: " + score;
-        }
-
-        if (position > game.offsetWidth + 50) {
-          clearInterval(move);
-          obstacle.remove();
-        }
-      }, 20);
+        if (left < -50) ob.remove();
+      });
     }
 
-    function gameOver() {
-      gameRunning = false;
-      gameOverDisplay.style.display = "block";
+    function spawnObstacle() {
+      const ob = document.createElement('div');
+      ob.className = 'obstacle';
+      ob.style.left = '100vw';
+      game.appendChild(ob);
     }
 
-    // Spawn obstacles every 2 to 3 seconds
-    function spawnObstacles() {
-      if (!gameRunning) return;
-      createObstacle();
-      setTimeout(spawnObstacles, Math.random() * 1500 + 1500);
-    }
+    document.addEventListener('keydown', e => {
+      if (e.code === 'Space' || e.code === 'ArrowUp') jump();
+    });
 
-    // Handle jumps by tap or click anywhere
-    document.body.addEventListener("click", jump);
-    document.body.addEventListener("touchstart", jump);
+    document.addEventListener('touchstart', jump);
 
-    // Start the game
-    spawnObstacles();
+    let gameLoop = setInterval(() => {
+      updateGame();
+      score++;
+      scoreEl.textContent = `Score: ${score}`;
+    }, 30);
+
+    let obstacleInterval = setInterval(() => {
+      spawnObstacle();
+    }, 1500);
   </script>
 </body>
 </html>
