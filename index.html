@@ -15,17 +15,15 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #ffe6f0;
-      font-family: sans-serif;
+      font-family: 'Comic Sans MS', sans-serif;
       touch-action: manipulation;
+      background: linear-gradient(to top, #ffd6e0, #ffe9f0);
     }
 
     canvas {
       display: block;
       margin: auto;
-      background: #fff0f5;
-      border: 3px solid #ff69b4;
-      border-radius: 15px;
+      background: transparent;
     }
 
     #score {
@@ -34,11 +32,11 @@
       left: 50%;
       transform: translateX(-50%);
       font-size: 1.5rem;
-      color: #d6336c;
-      background: #fff;
+      color: #fff;
+      background: #ff69b4;
       padding: 8px 16px;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      border-radius: 30px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
 
     #game-over {
@@ -53,6 +51,7 @@
       border-radius: 15px;
       display: none;
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      text-align: center;
     }
   </style>
 </head>
@@ -80,10 +79,15 @@
     };
 
     let roses = [];
+    let clouds = [
+      { x: 0, y: 50, speed: 0.3 },
+      { x: 150, y: 80, speed: 0.2 },
+      { x: 300, y: 40, speed: 0.4 }
+    ];
     let score = 0;
     let gameOver = false;
     let roseTimer = 0;
-    let roseInterval = 80; // Frames between obstacles (adjust for difficulty)
+    let roseInterval = 80;
 
     function resetGame() {
       player.y = canvas.height - player.height - groundHeight;
@@ -97,10 +101,36 @@
       document.getElementById("score").innerText = "Score: 0";
     }
 
+    function drawBackground() {
+      // Sun
+      ctx.beginPath();
+      ctx.arc(300, 80, 40, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffe066";
+      ctx.fill();
+
+      // Clouds
+      clouds.forEach(cloud => {
+        ctx.font = "30px serif";
+        ctx.fillText("☁️", cloud.x, cloud.y);
+        cloud.x -= cloud.speed;
+        if (cloud.x < -50) cloud.x = canvas.width + Math.random() * 100;
+      });
+
+      // Ground flowers
+      ctx.font = "24px serif";
+      for (let i = 0; i < canvas.width; i += 40) {
+        ctx.fillText("🌼", i, canvas.height - groundHeight + 20);
+      }
+
+      // Ground
+      ctx.fillStyle = "#ffccd5";
+      ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight);
+    }
+
     function drawPlayer() {
       ctx.save();
       ctx.translate(player.x + player.width / 2, player.y + player.height / 2);
-      ctx.scale(-1, 1); // Flip horizontally
+      ctx.scale(-1, 1);
       ctx.font = `${emojiSize}px serif`;
       ctx.fillText("🏃‍♀️", -player.width / 2, player.height / 2);
       ctx.restore();
@@ -141,13 +171,9 @@
 
     function update() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw ground
-      ctx.fillStyle = "#ffccd5";
-      ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight);
+      drawBackground();
 
       if (!gameOver) {
-        // Player physics
         player.dy += player.gravity;
         player.y += player.dy;
 
@@ -157,7 +183,6 @@
           player.grounded = true;
         }
 
-        // Rose spawn control
         roseTimer++;
         if (roseTimer >= roseInterval) {
           roseTimer = 0;
@@ -165,9 +190,7 @@
             x: canvas.width,
             y: canvas.height - groundHeight - emojiSize
           });
-
-          // Add a little randomness to spacing
-          roseInterval = 80 + Math.floor(Math.random() * 50); // 80–130 frames
+          roseInterval = 80 + Math.floor(Math.random() * 50);
         }
 
         updateRoses();
@@ -181,7 +204,6 @@
       requestAnimationFrame(update);
     }
 
-    // Touch or click to jump or restart
     window.addEventListener("touchstart", () => {
       if (gameOver) {
         resetGame();
