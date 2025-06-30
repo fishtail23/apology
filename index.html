@@ -2,202 +2,199 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Apology Game</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Mini Runner</title>
   <style>
-    * {
+    html, body {
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
-    }
-    html, body {
       height: 100%;
-      background: #fff0f6;
       overflow: hidden;
-      font-family: sans-serif;
+      background: #ffe4f2;
     }
+
     canvas {
       display: block;
+      width: 100vw;
+      height: 100vh;
     }
-    #score {
+
+    #restartBtn {
       position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 2rem;
-      color: #d63384;
-      font-weight: bold;
-      z-index: 10;
-    }
-    #gameOver {
-      position: absolute;
-      top: 40%;
+      top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 2rem;
-      color: #c92a2a;
-      text-align: center;
+      padding: 15px 30px;
+      font-size: 1.5rem;
+      background: #ff4081;
+      color: white;
+      border: none;
+      border-radius: 10px;
       display: none;
-      z-index: 10;
     }
   </style>
 </head>
 <body>
-  <div id="score">0</div>
-  <div id="gameOver">Game Over<br><small>Tap to Restart</small></div>
   <canvas id="gameCanvas"></canvas>
+  <button id="restartBtn">Restart</button>
 
   <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const scoreDisplay = document.getElementById('score');
-    const gameOverDisplay = document.getElementById('gameOver');
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const restartBtn = document.getElementById("restartBtn");
 
-    let W = window.innerWidth;
-    let H = window.innerHeight;
-    canvas.width = W;
-    canvas.height = H;
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
 
-    const UNIT = W / 20;
-    const GRAVITY = UNIT * 0.04;
-    const JUMP = -UNIT * 0.65;
-    const SPEED = UNIT * 0.1;
+    const UNIT = canvas.height / 15;
 
-    // Load images
-    const walkFrames = [
-      Object.assign(new Image(), { src: 'assets/pink_walk_a.png' }),
-      Object.assign(new Image(), { src: 'assets/pink_walk_b.png' }),
-    ];
+    let player, obstacles, score, gameRunning, frameCounter;
+
+    const walkA = new Image();
+    walkA.src = "assets/character_pink_walk_a.png";
+
+    const walkB = new Image();
+    walkB.src = "assets/character_pink_walk_b.png";
+
     const jumpImg = new Image();
-    jumpImg.src = 'assets/pink_jump.png';
+    jumpImg.src = "assets/character_pink_jump.png";
 
-    const character = {
-      x: UNIT * 2,
-      y: 0,
-      width: UNIT * 1.5,
-      height: UNIT * 1.5,
-      vy: 0,
-      grounded: false,
-      frameIndex: 0
-    };
+    function initGame() {
+      player = {
+        x: UNIT * 2,
+        y: canvas.height - UNIT * 2,
+        width: UNIT * 1.2,
+        height: UNIT * 1.2,
+        velocityY: 0,
+        isOnGround: true
+      };
 
-    const groundY = H - UNIT * 3;
-    let obstacles = [];
-    let score = 0;
-    let gameOver = false;
-    let frame = 0;
-
-    function resetGame() {
-      character.y = groundY - character.height;
-      character.vy = 0;
-      character.grounded = true;
       obstacles = [];
       score = 0;
-      frame = 0;
-      gameOver = false;
-      gameOverDisplay.style.display = 'none';
+      frameCounter = 0;
+      gameRunning = true;
+      restartBtn.style.display = "none";
     }
 
-    function spawnObstacle() {
-      const size = UNIT * 1.5;
-      obstacles.push({
-        x: W,
-        y: groundY - size,
-        width: size,
-        height: size,
-      });
-    }
+    const GRAVITY = UNIT * 0.07;
+    const JUMP_POWER = -UNIT * 0.7; // boosted jump
 
-    function update() {
-      if (gameOver) return;
-
-      frame++;
-
-      // Gravity
-      character.vy += GRAVITY;
-      character.y += character.vy;
-
-      // Ground collision
-      if (character.y + character.height >= groundY) {
-        character.y = groundY - character.height;
-        character.vy = 0;
-        character.grounded = true;
-      } else {
-        character.grounded = false;
-      }
-
-      // Obstacles
-      if (frame % 100 === 0) spawnObstacle();
-      obstacles.forEach(ob => ob.x -= SPEED);
-      obstacles = obstacles.filter(ob => ob.x + ob.width > 0);
-
-      // Collision detection
-      obstacles.forEach(ob => {
-        if (
-          character.x < ob.x + ob.width &&
-          character.x + character.width > ob.x &&
-          character.y < ob.y + ob.height &&
-          character.y + character.height > ob.y
-        ) {
-          gameOver = true;
-          gameOverDisplay.style.display = 'block';
-        }
-      });
-
-      score++;
-      scoreDisplay.innerText = Math.floor(score / 10);
-    }
-
-    function drawCharacter() {
-      const img = character.grounded
-        ? walkFrames[Math.floor(frame / 10) % 2]
-        : jumpImg;
-      ctx.drawImage(img, character.x, character.y, character.width, character.height);
+    function drawPlayer() {
+      const sprite = player.isOnGround ? (frameCounter % 20 < 10 ? walkA : walkB) : jumpImg;
+      ctx.drawImage(sprite, player.x, player.y, player.width, player.height);
     }
 
     function drawObstacles() {
-      ctx.fillStyle = "#ff6b81";
-      obstacles.forEach(ob => {
-        ctx.fillRect(ob.x, ob.y, ob.width, ob.height);
+      ctx.fillStyle = "#e63946";
+      obstacles.forEach(obs => {
+        ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
       });
     }
 
-    function render() {
-      ctx.clearRect(0, 0, W, H);
-
-      // Ground
-      ctx.fillStyle = "#ffe3ec";
-      ctx.fillRect(0, groundY, W, H - groundY);
-
-      drawCharacter();
-      drawObstacles();
+    function drawScore() {
+      ctx.fillStyle = "#000";
+      ctx.font = `${UNIT * 0.8}px Arial`;
+      ctx.fillText("Score: " + score, UNIT * 0.5, UNIT * 1.2);
     }
 
-    function loop() {
+    function spawnObstacle() {
+      const height = UNIT * 0.8; // smaller height
+      obstacles.push({
+        x: canvas.width,
+        y: canvas.height - height,
+        width: UNIT * 0.7,       // smaller width
+        height: height
+      });
+    }
+
+    function updatePlayer() {
+      player.velocityY += GRAVITY;
+      player.y += player.velocityY;
+
+      if (player.y + player.height >= canvas.height) {
+        player.y = canvas.height - player.height;
+        player.velocityY = 0;
+        player.isOnGround = true;
+      } else {
+        player.isOnGround = false;
+      }
+    }
+
+    function updateObstacles() {
+      for (let i = obstacles.length - 1; i >= 0; i--) {
+        const obs = obstacles[i];
+        obs.x -= UNIT * 0.18;
+
+        if (obs.x + obs.width < 0) {
+          obstacles.splice(i, 1);
+          score++;
+          continue;
+        }
+
+        if (
+          player.x < obs.x + obs.width &&
+          player.x + player.width > obs.x &&
+          player.y < obs.y + obs.height &&
+          player.y + player.height > obs.y
+        ) {
+          gameRunning = false;
+          restartBtn.style.display = "block";
+        }
+      }
+    }
+
+    function update() {
+      if (!gameRunning) return;
+
+      frameCounter++;
+      updatePlayer();
+      updateObstacles();
+
+      if (Math.random() < 0.015) {
+        spawnObstacle();
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawPlayer();
+      drawObstacles();
+      drawScore();
+    }
+
+    function gameLoop() {
       update();
-      render();
-      requestAnimationFrame(loop);
+      draw();
+      requestAnimationFrame(gameLoop);
     }
 
     function jump() {
-      if (gameOver) {
-        resetGame();
-        return;
-      }
-      if (character.grounded) {
-        character.vy = JUMP;
-        character.grounded = false;
+      if (player.isOnGround && gameRunning) {
+        player.velocityY = JUMP_POWER;
+        player.isOnGround = false;
       }
     }
 
-    // Controls
-    window.addEventListener('keydown', e => {
-      if (e.code === 'Space') jump();
+    document.addEventListener("keydown", (e) => {
+      if (e.code === "Space" || e.code === "ArrowUp") jump();
     });
-    window.addEventListener('touchstart', jump);
 
-    resetGame();
-    loop();
+    canvas.addEventListener("mousedown", jump);
+    canvas.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      jump();
+    }, { passive: false });
+
+    restartBtn.addEventListener("click", () => {
+      initGame();
+    });
+
+    initGame();
+    gameLoop();
   </script>
 </body>
 </html>
