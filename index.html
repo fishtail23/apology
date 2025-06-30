@@ -3,30 +3,43 @@
 <head>
   <meta charset="UTF-8" />
   <title>Runner Game</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <style>
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
       background: #f0f0f0;
       font-family: sans-serif;
-      text-align: center;
+      height: 100%;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
+
     canvas {
-      display: block;
-      margin: 0 auto;
       background: #fff;
       border-bottom: 4px solid #333;
       touch-action: none;
+      width: 100vw;
+      height: 60vh;
+      max-height: 400px;
     }
+
+    h1 {
+      margin: 10px 0;
+      font-size: 1.5rem;
+    }
+
     .controls {
       display: flex;
       justify-content: center;
       gap: 20px;
       margin-top: 10px;
     }
+
     .btn {
-      font-size: 24px;
+      font-size: 1.2rem;
       padding: 10px 20px;
       border-radius: 12px;
       border: none;
@@ -34,6 +47,7 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
       touch-action: manipulation;
     }
+
     @media (min-width: 800px) {
       .controls {
         display: none;
@@ -43,7 +57,7 @@
 </head>
 <body>
   <h1>🐱‍🏃 Runner Game</h1>
-  <canvas id="game" width="640" height="300"></canvas>
+  <canvas id="game"></canvas>
   <div class="controls">
     <button class="btn" id="jumpBtn">Jump</button>
   </div>
@@ -52,15 +66,23 @@
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
 
+    // Adjust canvas size based on screen
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight * 0.6;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
     const player = {
       x: 50,
-      y: 240,
+      y: 0,
       width: 30,
       height: 30,
       vy: 0,
       jumpPower: -10,
       gravity: 0.5,
-      onGround: true,
+      onGround: false,
       emoji: "🐱"
     };
 
@@ -69,9 +91,10 @@
     let gameSpeed = 4;
     let frame = 0;
     let gameOver = false;
+    let groundY = canvas.height - 30;
 
     function drawPlayer() {
-      ctx.font = "30px serif";
+      ctx.font = `${player.height}px serif`;
       ctx.fillText(player.emoji, player.x, player.y + player.height);
     }
 
@@ -82,7 +105,7 @@
 
     function drawGround() {
       ctx.fillStyle = "#ccc";
-      ctx.fillRect(0, 270, canvas.width, 30);
+      ctx.fillRect(0, groundY, canvas.width, 30);
     }
 
     function drawScore() {
@@ -97,8 +120,8 @@
       player.vy += player.gravity;
       player.y += player.vy;
 
-      if (player.y >= 240) {
-        player.y = 240;
+      if (player.y >= groundY - player.height) {
+        player.y = groundY - player.height;
         player.vy = 0;
         player.onGround = true;
       } else {
@@ -114,7 +137,7 @@
         const height = 30 + Math.random() * 20;
         obstacles.push({
           x: canvas.width,
-          y: 270 - height,
+          y: groundY - height,
           width: 20,
           height: height
         });
@@ -131,7 +154,6 @@
         }
       });
 
-      // Score
       score += 1;
       frame++;
     }
@@ -146,7 +168,8 @@
       if (gameOver) {
         ctx.fillStyle = "red";
         ctx.font = "32px Arial";
-        ctx.fillText("Game Over 💔", canvas.width/2 - 100, 150);
+        ctx.textAlign = "center";
+        ctx.fillText("Game Over 💔", canvas.width / 2, canvas.height / 2);
       }
     }
 
@@ -156,7 +179,6 @@
       requestAnimationFrame(loop);
     }
 
-    // Controls
     document.addEventListener("keydown", e => {
       if ((e.code === "Space" || e.code === "ArrowUp") && player.onGround) {
         player.vy = player.jumpPower;
