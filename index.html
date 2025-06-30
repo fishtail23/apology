@@ -53,6 +53,8 @@
     const UNIT = canvas.height / 15;
 
     let player, obstacles, score, gameRunning, frameCounter;
+    let obstacleTimer = 0;
+    let nextObstacleIn = 100;
 
     const walkA = new Image();
     walkA.src = "assets/character_pink_walk_a.png";
@@ -77,12 +79,13 @@
       score = 0;
       frameCounter = 0;
       gameRunning = true;
+      obstacleTimer = 0;
+      nextObstacleIn = 100;
       restartBtn.style.display = "none";
     }
 
-    // ✅ Adjusted gravity and jump
-    const GRAVITY = UNIT * 0.035;
-    const JUMP_POWER = -UNIT * 0.55;
+    const GRAVITY = UNIT * 0.07;
+    const JUMP_POWER = -UNIT * 0.6;
 
     function drawPlayer() {
       const sprite = player.isOnGround ? (frameCounter % 20 < 10 ? walkA : walkB) : jumpImg;
@@ -155,8 +158,11 @@
       updatePlayer();
       updateObstacles();
 
-      if (Math.random() < 0.015) {
+      obstacleTimer++;
+      if (obstacleTimer >= nextObstacleIn) {
         spawnObstacle();
+        obstacleTimer = 0;
+        nextObstacleIn = Math.floor(80 + Math.random() * 100); // consistent spacing
       }
     }
 
