@@ -31,7 +31,7 @@
       border: none;
       border-radius: 10px;
       display: none;
-      z-index: 2;
+      z-index: 1;
     }
   </style>
 </head>
@@ -52,9 +52,8 @@
     resizeCanvas();
 
     const UNIT = canvas.height / 15;
-    const FLOOR_HEIGHT = UNIT;
 
-    // Load images
+    // Load Images
     const walkA = new Image();
     walkA.src = "assets/character_pink_walk_a.png";
 
@@ -67,31 +66,41 @@
     const bgImage = new Image();
     bgImage.src = "assets/background_color_mushrooms.png";
 
-    const floorTile = new Image();
-    floorTile.src = "assets/terrain_dirt_block_top.png";
+    const tileImg = new Image();
+    tileImg.src = "assets/terrain_dirt_block_top.png";
 
-    const fence = new Image();
-    fence.src = "assets/fence.png";
+    const obstacleImages = [
+      "assets/fence.png",
+      "assets/fence_broken.png",
+      "assets/ladder_middle.png"
+    ].map(src => {
+      const img = new Image();
+      img.src = src;
+      return img;
+    });
 
-    const fenceBroken = new Image();
-    fenceBroken.src = "assets/fence_broken.png";
+    const cloudImages = ["assets/cloud1.png", "assets/cloud2.png"].map(src => {
+      const img = new Image();
+      img.src = src;
+      return img;
+    });
 
-    const ladderMiddle = new Image();
-    ladderMiddle.src = "assets/ladder_middle.png";
+    const sunImg = new Image();
+    sunImg.src = "assets/sun.png";
 
-    const obstacleImages = [fence, fenceBroken, ladderMiddle];
-
+    // Game Variables
     let player, obstacles, score, gameRunning, frameCounter;
     let obstacleTimer = 0;
     let nextObstacleIn = 100;
+    let clouds = [];
 
-    const GRAVITY = UNIT * 0.02;
+    const GRAVITY = UNIT * 0.2;
     const JUMP_POWER = -UNIT * 0.28;
 
     function initGame() {
       player = {
         x: UNIT * 2,
-        y: canvas.height - FLOOR_HEIGHT - UNIT * 1.2,
+        y: canvas.height - UNIT * 2,
         width: UNIT * 1.2,
         height: UNIT * 1.2,
         velocityY: 0,
@@ -105,21 +114,45 @@
       obstacleTimer = 0;
       nextObstacleIn = 100;
       restartBtn.style.display = "none";
+
+      clouds = Array.from({ length: 5 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * UNIT * 4,
+        speed: UNIT * 0.01 + Math.random() * UNIT * 0.01,
+        image: cloudImages[Math.floor(Math.random() * cloudImages.length)],
+        width: UNIT * 5,
+        height: UNIT * 2.5
+      }));
     }
 
     function drawBackground() {
       ctx.fillStyle = "#ffe4f2";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+      // background image bottom aligned
       const imgHeight = (bgImage.height / bgImage.width) * canvas.width;
       const y = canvas.height - imgHeight;
       ctx.drawImage(bgImage, 0, y, canvas.width, imgHeight);
+
+      // sun
+      const sunSize = UNIT * 3;
+      ctx.drawImage(sunImg, canvas.width - sunSize - UNIT, UNIT, sunSize, sunSize);
+
+      // clouds
+      clouds.forEach(cloud => {
+        ctx.drawImage(cloud.image, cloud.x, cloud.y, cloud.width, cloud.height);
+        cloud.x -= cloud.speed;
+        if (cloud.x + cloud.width < 0) {
+          cloud.x = canvas.width + Math.random() * UNIT * 2;
+          cloud.y = Math.random() * UNIT * 4;
+        }
+      });
     }
 
-    function drawFloorTiles() {
-      const tileSize = FLOOR_HEIGHT;
-      for (let x = 0; x < canvas.width; x += tileSize) {
-        ctx.drawImage(floorTile, x, canvas.height - FLOOR_HEIGHT, tileSize, FLOOR_HEIGHT);
+    function drawFloor() {
+      const tilesX = Math.ceil(canvas.width / UNIT);
+      for (let i = 0; i <= tilesX; i++) {
+        ctx.drawImage(tileImg, i * UNIT, canvas.height - UNIT, UNIT, UNIT);
       }
     }
 
@@ -141,16 +174,16 @@
     }
 
     function spawnObstacle() {
-      const height = UNIT;
-      const width = UNIT;
-      const randomImg = obstacleImages[Math.floor(Math.random() * obstacleImages.length)];
+      const img = obstacleImages[Math.floor(Math.random() * obstacleImages.length)];
+      const width = UNIT * 1;
+      const height = UNIT * 1.2;
 
       obstacles.push({
         x: canvas.width,
-        y: canvas.height - FLOOR_HEIGHT - height,
+        y: canvas.height - UNIT - height,
         width,
         height,
-        image: randomImg
+        image: img
       });
     }
 
@@ -158,9 +191,8 @@
       player.velocityY += GRAVITY;
       player.y += player.velocityY;
 
-      const groundY = canvas.height - FLOOR_HEIGHT;
-      if (player.y + player.height >= groundY) {
-        player.y = groundY - player.height;
+      if (player.y + player.height >= canvas.height - UNIT) {
+        player.y = canvas.height - UNIT - player.height;
         player.velocityY = 0;
         player.isOnGround = true;
       } else {
@@ -179,11 +211,13 @@
           continue;
         }
 
+        const buffer = UNIT * 0.2;
+
         if (
-          player.x < obs.x + obs.width &&
-          player.x + player.width > obs.x &&
-          player.y < obs.y + obs.height &&
-          player.y + player.height > obs.y
+          player.x < obs.x + obs.width - buffer &&
+          player.x + player.width > obs.x + buffer &&
+          player.y < obs.y + obs.height - buffer &&
+          player.y + player.height > obs.y + buffer
         ) {
           gameRunning = false;
           restartBtn.style.display = "block";
@@ -208,7 +242,7 @@
 
     function draw() {
       drawBackground();
-      drawFloorTiles();
+      drawFloor();
       drawPlayer();
       drawObstacles();
       drawScore();
@@ -242,12 +276,13 @@
     });
 
     // Wait for all images to load before starting
-    const images = [walkA, walkB, jumpImg, bgImage, floorTile, fence, fenceBroken, ladderMiddle];
-    let loaded = 0;
-    images.forEach(img => {
+    const allImages = [walkA, walkB, jumpImg, bgImage, tileImg, sunImg, ...obstacleImages, ...cloudImages];
+    let loadedCount = 0;
+
+    allImages.forEach(img => {
       img.onload = () => {
-        loaded++;
-        if (loaded === images.length) {
+        loadedCount++;
+        if (loadedCount === allImages.length) {
           initGame();
           gameLoop();
         }
