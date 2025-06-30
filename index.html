@@ -31,6 +31,7 @@
       border: none;
       border-radius: 10px;
       display: none;
+      z-index: 2;
     }
   </style>
 </head>
@@ -46,14 +47,14 @@
     function resizeCanvas() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      UNIT = canvas.height / 15;
-      FLOOR_HEIGHT = UNIT * 0.6;
     }
-
     window.addEventListener("resize", resizeCanvas);
-    let UNIT, FLOOR_HEIGHT;
     resizeCanvas();
 
+    const UNIT = canvas.height / 15;
+    const FLOOR_HEIGHT = UNIT;
+
+    // Load images
     const walkA = new Image();
     walkA.src = "assets/character_pink_walk_a.png";
 
@@ -65,6 +66,9 @@
 
     const bgImage = new Image();
     bgImage.src = "assets/background_color_mushrooms.png";
+
+    const floorTile = new Image();
+    floorTile.src = "assets/terrain_dirt_block_top.png";
 
     let player, obstacles, score, gameRunning, frameCounter;
     let obstacleTimer = 0;
@@ -93,19 +97,19 @@
     }
 
     function drawBackground() {
-      const canvasWidth = canvas.width;
-      const canvasHeight = canvas.height;
-
       ctx.fillStyle = "#ffe4f2";
-      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      const imgHeight = (bgImage.height / bgImage.width) * canvasWidth;
-      const y = canvasHeight - imgHeight - FLOOR_HEIGHT;
-      ctx.drawImage(bgImage, 0, y, canvasWidth, imgHeight);
+      const imgHeight = (bgImage.height / bgImage.width) * canvas.width;
+      const y = canvas.height - imgHeight;
+      ctx.drawImage(bgImage, 0, y, canvas.width, imgHeight);
+    }
 
-      // Floor
-      ctx.fillStyle = "#cc66a2";
-      ctx.fillRect(0, canvasHeight - FLOOR_HEIGHT, canvasWidth, FLOOR_HEIGHT);
+    function drawFloorTiles() {
+      const tileSize = FLOOR_HEIGHT;
+      for (let x = 0; x < canvas.width; x += tileSize) {
+        ctx.drawImage(floorTile, x, canvas.height - FLOOR_HEIGHT, tileSize, FLOOR_HEIGHT);
+      }
     }
 
     function drawPlayer() {
@@ -140,9 +144,9 @@
       player.velocityY += GRAVITY;
       player.y += player.velocityY;
 
-      const ground = canvas.height - FLOOR_HEIGHT - player.height;
-      if (player.y >= ground) {
-        player.y = ground;
+      const groundY = canvas.height - FLOOR_HEIGHT;
+      if (player.y + player.height >= groundY) {
+        player.y = groundY - player.height;
         player.velocityY = 0;
         player.isOnGround = true;
       } else {
@@ -190,6 +194,7 @@
 
     function draw() {
       drawBackground();
+      drawFloorTiles();
       drawPlayer();
       drawObstacles();
       drawScore();
@@ -222,14 +227,13 @@
       initGame();
     });
 
-    // Wait for all images to load before starting game
-    const imagesToLoad = [walkA, walkB, jumpImg, bgImage];
-    let loadedCount = 0;
-
-    imagesToLoad.forEach(img => {
+    // Load all images before starting
+    const images = [walkA, walkB, jumpImg, bgImage, floorTile];
+    let loaded = 0;
+    images.forEach(img => {
       img.onload = () => {
-        loadedCount++;
-        if (loadedCount === imagesToLoad.length) {
+        loaded++;
+        if (loaded === images.length) {
           initGame();
           gameLoop();
         }
