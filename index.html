@@ -2,194 +2,163 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Runner Game</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Roses Runner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
+    * { box-sizing: border-box; padding: 0; margin: 0; }
     html, body {
-      margin: 0;
-      padding: 0;
-      background: #f0f0f0;
-      font-family: sans-serif;
       height: 100%;
       overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      font-family: sans-serif;
+      background: black;
     }
-
     canvas {
-      background: #fff;
-      border-bottom: 4px solid #333;
-      touch-action: none;
+      display: block;
       width: 100vw;
-      height: 60vh;
-      max-height: 400px;
+      height: 100vh;
+      background: url('https://media.tenor.com/fOP9jA3HaMsAAAAi/hearts-of-happiness-hearts.gif') no-repeat center center fixed;
+      background-size: cover;
     }
-
-    h1 {
-      margin: 10px 0;
-      font-size: 1.5rem;
-    }
-
-    .controls {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin-top: 10px;
-    }
-
-    .btn {
-      font-size: 1.2rem;
-      padding: 10px 20px;
-      border-radius: 12px;
-      border: none;
-      background: #ddd;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      touch-action: manipulation;
-    }
-
-    @media (min-width: 800px) {
-      .controls {
-        display: none;
-      }
+    #gameOver {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2.5rem;
+      color: white;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 1rem 2rem;
+      border-radius: 10px;
+      display: none;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <h1>🐱‍🏃 Runner Game</h1>
-  <canvas id="game"></canvas>
-  <div class="controls">
-    <button class="btn" id="jumpBtn">Jump</button>
-  </div>
+  <canvas id="gameCanvas"></canvas>
+  <div id="gameOver">Game Over<br><small>Tap to try again</small></div>
 
   <script>
-    const canvas = document.getElementById('game');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
 
-    // Adjust canvas size based on screen
-    function resizeCanvas() {
+    // Resize canvas
+    function resize() {
       canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight * 0.6;
+      canvas.height = window.innerHeight;
     }
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener("resize", resize);
+    resize();
 
+    // Player
     const player = {
       x: 50,
       y: 0,
-      width: 30,
-      height: 30,
+      width: 40,
+      height: 40,
       vy: 0,
-      jumpPower: -10,
-      gravity: 0.5,
+      gravity: 1,
+      jumpPower: -18,
       onGround: false,
-      emoji: "🐱"
+      color: "#ff69b4"
     };
 
-    let score = 0;
-    let obstacles = [];
-    let gameSpeed = 4;
+    // Roses (obstacles)
+    const roses = [];
     let frame = 0;
-    let gameOver = false;
-    let groundY = canvas.height - 30;
+    let gameRunning = true;
 
     function drawPlayer() {
-      ctx.font = `${player.height}px serif`;
-      ctx.fillText(player.emoji, player.x, player.y + player.height);
+      ctx.fillStyle = player.color;
+      ctx.beginPath();
+      ctx.arc(player.x + player.width / 2, player.y + player.height / 2, player.width / 2, 0, Math.PI * 2);
+      ctx.fill();
     }
 
-    function drawObstacle(ob) {
-      ctx.fillStyle = "#008000";
-      ctx.fillRect(ob.x, ob.y, ob.width, ob.height);
+    function drawRose(rose) {
+      ctx.font = "32px serif";
+      ctx.fillText("🌹", rose.x, rose.y);
     }
 
-    function drawGround() {
-      ctx.fillStyle = "#ccc";
-      ctx.fillRect(0, groundY, canvas.width, 30);
+    function showGameOver() {
+      document.getElementById("gameOver").style.display = "block";
     }
 
-    function drawScore() {
-      ctx.fillStyle = "#333";
-      ctx.font = "18px Arial";
-      ctx.fillText("Score: " + score, 10, 25);
+    function resetGame() {
+      player.y = canvas.height - player.height - 30;
+      player.vy = 0;
+      roses.length = 0;
+      frame = 0;
+      gameRunning = true;
+      document.getElementById("gameOver").style.display = "none";
+      loop();
     }
 
-    function update() {
-      if (gameOver) return;
+    function loop() {
+      if (!gameRunning) return;
 
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Gravity
       player.vy += player.gravity;
       player.y += player.vy;
 
-      if (player.y >= groundY - player.height) {
-        player.y = groundY - player.height;
+      // Ground collision
+      if (player.y + player.height >= canvas.height - 30) {
+        player.y = canvas.height - player.height - 30;
         player.vy = 0;
         player.onGround = true;
       } else {
         player.onGround = false;
       }
 
-      // Move and remove obstacles
-      obstacles.forEach(ob => ob.x -= gameSpeed);
-      obstacles = obstacles.filter(ob => ob.x + ob.width > 0);
-
-      // Add new obstacles
-      if (frame % 90 === 0) {
-        const height = 30 + Math.random() * 20;
-        obstacles.push({
-          x: canvas.width,
-          y: groundY - height,
-          width: 20,
-          height: height
-        });
-      }
-
-      // Collision check
-      obstacles.forEach(ob => {
-        if (
-          player.x < ob.x + ob.width &&
-          player.x + player.width > ob.x &&
-          player.y + player.height > ob.y
-        ) {
-          gameOver = true;
-        }
-      });
-
-      score += 1;
-      frame++;
-    }
-
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawGround();
       drawPlayer();
-      obstacles.forEach(drawObstacle);
-      drawScore();
 
-      if (gameOver) {
-        ctx.fillStyle = "red";
-        ctx.font = "32px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText("Game Over 💔", canvas.width / 2, canvas.height / 2);
+      // Add roses
+      if (frame % 90 === 0) {
+        roses.push({ x: canvas.width, y: canvas.height - 50 });
       }
-    }
 
-    function loop() {
-      update();
-      draw();
+      // Move and draw roses
+      for (let i = 0; i < roses.length; i++) {
+        roses[i].x -= 6;
+        drawRose(roses[i]);
+
+        // Collision
+        if (
+          player.x < roses[i].x + 30 &&
+          player.x + player.width > roses[i].x &&
+          player.y < roses[i].y + 30 &&
+          player.y + player.height > roses[i].y
+        ) {
+          gameRunning = false;
+          showGameOver();
+        }
+      }
+
+      frame++;
       requestAnimationFrame(loop);
     }
 
-    document.addEventListener("keydown", e => {
-      if ((e.code === "Space" || e.code === "ArrowUp") && player.onGround) {
+    // Controls
+    function handleJump() {
+      if (player.onGround && gameRunning) {
         player.vy = player.jumpPower;
+      } else if (!gameRunning) {
+        resetGame();
+      }
+    }
+
+    document.addEventListener("touchstart", handleJump);
+    document.addEventListener("mousedown", handleJump);
+    document.addEventListener("keydown", e => {
+      if (e.code === "Space" || e.code === "ArrowUp") {
+        handleJump();
       }
     });
 
-    document.getElementById("jumpBtn").addEventListener("touchstart", () => {
-      if (player.onGround) player.vy = player.jumpPower;
-    });
-
-    loop();
+    // Start game
+    resetGame();
   </script>
 </body>
 </html>
