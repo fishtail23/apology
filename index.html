@@ -65,6 +65,9 @@
     const jumpImg = new Image();
     jumpImg.src = "assets/character_pink_jump.png";
 
+    const background = new Image();
+    background.src = "assets/background_color_mushrooms.png";
+
     function initGame() {
       player = {
         x: UNIT * 2,
@@ -84,8 +87,12 @@
       restartBtn.style.display = "none";
     }
 
-    const GRAVITY = UNIT * 0.045; // ✅ Smoother gravity for more natural fall
+    const GRAVITY = UNIT * 0.045;
     const JUMP_POWER = -UNIT * 0.6;
+
+    function drawBackground() {
+      ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+    }
 
     function drawPlayer() {
       const sprite = player.isOnGround ? (frameCounter % 20 < 10 ? walkA : walkB) : jumpImg;
@@ -167,7 +174,7 @@
     }
 
     function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBackground();
       drawPlayer();
       drawObstacles();
       drawScore();
