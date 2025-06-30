@@ -80,8 +80,8 @@
       restartBtn.style.display = "none";
     }
 
-    const GRAVITY = UNIT * 0.08;
-    const JUMP_POWER = -UNIT * 0.5;
+    const GRAVITY = UNIT * 0.07;
+    const JUMP_POWER = -UNIT * 0.7; // boosted jump
 
     function drawPlayer() {
       const sprite = player.isOnGround ? (frameCounter % 20 < 10 ? walkA : walkB) : jumpImg;
@@ -102,11 +102,11 @@
     }
 
     function spawnObstacle() {
-      const height = UNIT * 1.2;
+      const height = UNIT * 0.8; // smaller height
       obstacles.push({
         x: canvas.width,
         y: canvas.height - height,
-        width: UNIT * 1,
+        width: UNIT * 0.7,       // smaller width
         height: height
       });
     }
