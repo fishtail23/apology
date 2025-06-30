@@ -116,13 +116,7 @@
         if (cloud.x < -50) cloud.x = canvas.width + Math.random() * 100;
       });
 
-      // Ground flowers
-      ctx.font = "24px serif";
-      for (let i = 0; i < canvas.width; i += 40) {
-        ctx.fillText("🌼", i, canvas.height - groundHeight + 20);
-      }
-
-      // Ground
+      // Ground (no flowers now)
       ctx.fillStyle = "#ffccd5";
       ctx.fillRect(0, canvas.height - groundHeight, canvas.width, groundHeight);
     }
